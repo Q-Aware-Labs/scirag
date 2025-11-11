@@ -1,0 +1,13 @@
+# SciRAG POC - Requirements
+
+# Core dependencies
+arxiv==2.1.0
+PyMuPDF==1.23.8
+chromadb==0.4.22
+anthropic==0.39.0
+
+# Embedding model
+sentence-transformers==2.3.1
+
+# Additional utilities
+requests>=2.31.0

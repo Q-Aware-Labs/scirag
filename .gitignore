@@ -30,6 +30,7 @@ papers/
 
 # API Keys
 .env
+.env.example
 *.key
 
 # IDE

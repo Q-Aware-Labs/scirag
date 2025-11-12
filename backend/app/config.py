@@ -1,0 +1,63 @@
+"""
+Configuration management for SciRAG
+Loads settings from .env file
+"""
+
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+class Settings:
+    """Application settings"""
+    
+    # API Keys
+    ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
+    
+    # arXiv Settings
+    MAX_PAPERS: int = int(os.getenv("MAX_PAPERS", "5"))
+    
+    # PDF Processing
+    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "1000"))
+    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "200"))
+    DOWNLOAD_DIR: Path = Path(os.getenv("DOWNLOAD_DIR", "./papers"))
+    
+    # Embedding Settings
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+    
+    # Vector DB Settings
+    CHROMA_PERSIST_DIR: Path = Path(os.getenv("CHROMA_PERSIST_DIR", "./chroma_db"))
+    
+    # LLM Settings
+    CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514")
+    MAX_TOKENS: int = int(os.getenv("MAX_TOKENS", "2000"))
+    
+    def __init__(self):
+        """Validate settings on initialization"""
+        if not self.ANTHROPIC_API_KEY:
+            raise ValueError(
+                "ANTHROPIC_API_KEY not found. "
+                "Set it in your .env file or as an environment variable."
+            )
+        
+        # Create directories if they don't exist
+        self.DOWNLOAD_DIR.mkdir(exist_ok=True, parents=True)
+        self.CHROMA_PERSIST_DIR.mkdir(exist_ok=True, parents=True)
+    
+    def __repr__(self):
+        """String representation (hide API key)"""
+        return (
+            f"Settings(\n"
+            f"  ANTHROPIC_API_KEY={'*' * 20}\n"
+            f"  MAX_PAPERS={self.MAX_PAPERS}\n"
+            f"  CHUNK_SIZE={self.CHUNK_SIZE}\n"
+            f"  EMBEDDING_MODEL={self.EMBEDDING_MODEL}\n"
+            f"  CLAUDE_MODEL={self.CLAUDE_MODEL}\n"
+            f")"
+        )
+
+
+# Global settings instance
+settings = Settings()

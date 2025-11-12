@@ -1,0 +1,12 @@
+Antony:
+
+I want to build a modern, professional, and customizable RAG system using free or pay-per-use tools. My goal is to create an API and a user interface for it so that everybody can have access. It will be called SciRAG.
+
+The objective of this RAG agent is, given a user query like "prompt injection," to navigate to https://arxiv.org/, find the most relevant papers, open the PDFs, read and digest the content, and then explain the topic to the user. The user can also ask follow-up questions about the retrieved documents.
+
+I also need to resolve my doubt about whether this needs to be an AI agent with RAG capabilities or just a simple RAG system. I am not sure.
+
+What do I need to make this project, and how should I start? Please give me your recommendations.
+
+Claude:
+

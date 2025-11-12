@@ -84,7 +84,28 @@ class SciRAG:
             return pdf_path
         
         print(f"   📥 Downloading: {paper.title[:60]}...")
-        paper.download_pdf(filename=str(pdf_path))
+        
+        try:
+            # Try the built-in download method
+            paper.download_pdf(filename=str(pdf_path))
+        except Exception as e:
+            # If that fails, construct the PDF URL manually from the entry_id
+            print(f"   ⚠️  Standard download failed, trying alternative method...")
+            import requests
+            
+            # Extract arXiv ID from entry_id (format: http://arxiv.org/abs/2301.12345v1)
+            arxiv_id = paper.entry_id.split('/abs/')[-1]
+            pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+            
+            print(f"   📥 Downloading from: {pdf_url}")
+            response = requests.get(pdf_url, timeout=30)
+            
+            if response.status_code == 200:
+                with open(pdf_path, 'wb') as f:
+                    f.write(response.content)
+            else:
+                raise Exception(f"Failed to download PDF: HTTP {response.status_code}")
+        
         print(f"   ✅ Downloaded to: {pdf_path.name}")
         
         return pdf_path
@@ -96,19 +117,46 @@ class SciRAG:
         try:
             doc = fitz.open(pdf_path)
             text = ""
+            page_count = len(doc)
             
-            for page_num, page in enumerate(doc, 1):
-                page_text = page.get_text()
-                text += f"\n--- Page {page_num} ---\n{page_text}"
+            for page_num in range(page_count):
+                try:
+                    page = doc[page_num]
+                    page_text = page.get_text()
+                    text += f"\n--- Page {page_num + 1} ---\n{page_text}"
+                except Exception as e:
+                    print(f"   ⚠️  Error reading page {page_num + 1}: {e}")
+                    continue
             
             doc.close()
             
-            print(f"   ✅ Extracted {len(text):,} characters from {len(doc)} pages")
+            if not text.strip():
+                print(f"   ⚠️  No text extracted from PDF")
+                return ""
+            
+            print(f"   ✅ Extracted {len(text):,} characters from {page_count} pages")
             return text
         
         except Exception as e:
             print(f"   ❌ Error extracting text: {e}")
-            return ""
+            # Try alternative extraction method
+            try:
+                print(f"   🔄 Trying alternative extraction method...")
+                doc = fitz.open(str(pdf_path))
+                text = ""
+                for page in doc:
+                    text += page.get_text("text")
+                doc.close()
+                
+                if text.strip():
+                    print(f"   ✅ Alternative method succeeded: {len(text):,} characters")
+                    return text
+                else:
+                    print(f"   ❌ Alternative method also failed")
+                    return ""
+            except Exception as e2:
+                print(f"   ❌ Alternative extraction also failed: {e2}")
+                return ""
     
     def chunk_text(self, text: str, chunk_size: int = 1000, overlap: int = 200) -> List[str]:
         """Split text into overlapping chunks"""
@@ -276,7 +324,7 @@ def main():
         return
     
     # Example usage
-    search_topic = "prompt injection attacks"
+    search_topic = "prompt injection"
     
     # Step 1: Search arXiv
     papers = rag.search_arxiv(search_topic, max_results=2)

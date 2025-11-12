@@ -1,45 +1,40 @@
 """
 SciRAG FastAPI Application
-Main application entry point
+Main application entry point with lazy agent initialization
 """
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 
 from .api.routes import search, query, papers
 from .config import settings
 
-# Global agent instance
+# Global agent instance - initialized lazily
 agent = None
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
+def get_agent():
     """
-    Lifespan context manager
-    Initializes resources on startup, cleans up on shutdown
+    Get or create the SciRAGAgent instance (lazy initialization).
+    This prevents memory issues on startup.
     """
     global agent
-    
-    # Startup: Initialize the agent
-    print("🚀 Starting SciRAG API...")
-    from .agents.scirag_agent import SciRAGAgent
-    agent = SciRAGAgent()
-    print("✅ SciRAG Agent initialized")
-    
-    yield
-    
-    # Shutdown
-    print("👋 Shutting down SciRAG API...")
+    if agent is None:
+        print("🔄 Initializing SciRAG Agent (lazy load)...")
+        from .agents.scirag_agent import SciRAGAgent
+        agent = SciRAGAgent()
+        print("✅ SciRAG Agent initialized")
+    return agent
 
 
-# Create FastAPI app
+# Create FastAPI app without lifespan (to avoid startup memory spike)
 app = FastAPI(
     title="SciRAG API",
     description="Scientific Research Assistant with RAG - API for searching arXiv papers and answering questions",
     version="0.1.0",
-    lifespan=lifespan
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
 
 # Configure CORS
@@ -64,34 +59,52 @@ async def root():
         "message": "Welcome to SciRAG API",
         "version": "0.1.0",
         "docs": "/docs",
-        "health": "/health"
+        "redoc": "/redoc",
+        "health": "/health",
+        "api_endpoints": {
+            "search": "/api/search",
+            "query": "/api/query",
+            "papers": "/api/papers",
+            "process": "/api/process"
+        }
     }
 
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
+    """
+    Health check endpoint.
+    Returns basic health without initializing heavy resources.
+    """
+    return {
+        "status": "healthy",
+        "version": "0.1.0",
+        "message": "SciRAG API is running",
+        "config": {
+            "max_papers": settings.MAX_PAPERS,
+            "claude_model": settings.CLAUDE_MODEL,
+            "embedding_model": settings.EMBEDDING_MODEL
+        }
+    }
+
+
+@app.get("/api/status")
+async def agent_status():
+    """
+    Get agent initialization status.
+    This will initialize the agent if it hasn't been already.
+    """
     global agent
     
-    if agent is None:
-        return {
-            "status": "unhealthy",
-            "message": "Agent not initialized"
-        }
-    
     try:
-        stats = agent.get_stats()
+        agent_instance = get_agent()
+        stats = agent_instance.get_stats()
         return {
-            "status": "healthy",
-            "version": "0.1.0",
+            "status": "initialized",
             "agent_stats": stats
         }
     except Exception as e:
         return {
-            "status": "unhealthy",
-            "message": str(e)
+            "status": "error",
+            "message": f"Failed to initialize agent: {str(e)}"
         }
-
-
-# Global agent instance accessible to routes
-agent = None

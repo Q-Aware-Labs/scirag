@@ -27,6 +27,7 @@ wheels/
 papers/
 *.pdf
 .chroma/
+backend/.env
 
 # API Keys
 .env

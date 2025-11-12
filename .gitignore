@@ -28,6 +28,7 @@ papers/
 *.pdf
 .chroma/
 backend/.env
+backend/.env.example
 
 # API Keys
 .env

@@ -29,8 +29,9 @@ async def process_papers(request: ProcessPapersRequest):
     This must be done before querying with /api/query
     """
     try:
-        # Import agent inside function to avoid circular import
-        from ...main import agent
+        # Get agent instance using lazy initialization
+        from ...main import get_agent
+        agent = get_agent()
         
         if not request.paper_ids:
             raise HTTPException(
@@ -87,8 +88,9 @@ async def list_papers():
     Returns metadata for all papers that have been indexed
     """
     try:
-        # Import agent inside function to avoid circular import
-        from ...main import agent
+        # Get agent instance using lazy initialization
+        from ...main import get_agent
+        agent = get_agent()
         
         papers = []
         for paper_id, metadata in agent.papers_metadata.items():
@@ -115,8 +117,9 @@ async def get_paper(paper_id: str):
     - **paper_id**: arXiv paper ID (e.g., "2301.12345v1")
     """
     try:
-        # Import agent inside function to avoid circular import
-        from ...main import agent
+        # Get agent instance using lazy initialization
+        from ...main import get_agent
+        agent = get_agent()
         
         if paper_id not in agent.papers_metadata:
             raise HTTPException(
@@ -144,8 +147,10 @@ async def get_stats():
     Returns information about papers processed and chunks indexed
     """
     try:
-        # Import agent inside function to avoid circular import
-        from ...main import agent
+        # Get agent instance using lazy initialization
+        from ...main import get_agent
+        agent = get_agent()
+        
         stats = agent.get_stats()
         
         return StatsResponse(

@@ -24,8 +24,9 @@ async def query_papers(request: QueryRequest):
     Note: Papers must be processed first using /api/papers/process
     """
     try:
-        # Import agent inside function to avoid circular import
-        from ...main import agent
+        # Get agent instance using lazy initialization
+        from ...main import get_agent
+        agent = get_agent()
         
         # Check if any papers are indexed
         stats = agent.get_stats()

@@ -23,8 +23,9 @@ async def search_papers(request: SearchRequest):
     Returns list of paper metadata
     """
     try:
-        # Import agent inside function to avoid circular import
-        from ...main import agent
+        # Get agent instance using lazy initialization
+        from ...main import get_agent
+        agent = get_agent()
         
         # Search papers
         papers = agent.search_papers(

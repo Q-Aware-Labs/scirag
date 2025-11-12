@@ -23,10 +23,28 @@ wheels/
 .installed.cfg
 *.egg
 
+# Virtual Environment
+backend/venv/
+backend/ENV/
+backend/env/
+
+# Environment Variables
+backend/.env
+frontend/.env
+frontend/.env.local
+
 # SciRAG specific
 papers/
 *.pdf
 .chroma/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Data & Cache
+backend/papers/
+backend/chroma_db/
 
 # API Keys
 .env

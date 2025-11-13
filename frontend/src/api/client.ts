@@ -35,6 +35,12 @@ export interface Source {
   url: string;
 }
 
+export interface APIConfig {
+  provider: 'claude' | 'openai' | 'deepseek' | 'gemini';
+  apiKey: string;
+  model?: string;
+}
+
 export interface QueryResponse {
   success: boolean;
   answer: string;
@@ -58,11 +64,34 @@ export const api = {
     return response.data;
   },
 
-  query: async (question: string, nResults: number = 5): Promise<QueryResponse> => {
-    const response = await axios.post(`${API_BASE_URL}/query`, {
+  query: async (
+    question: string,
+    nResults: number = 5,
+    apiConfig?: APIConfig | null
+  ): Promise<QueryResponse> => {
+    const requestData: {
+      question: string;
+      n_results: number;
+      api_config?: {
+        provider: string;
+        api_key: string;
+        model?: string;
+      };
+    } = {
       question,
       n_results: nResults
-    });
+    };
+
+    // Include API config if provided
+    if (apiConfig) {
+      requestData.api_config = {
+        provider: apiConfig.provider,
+        api_key: apiConfig.apiKey,
+        model: apiConfig.model
+      };
+    }
+
+    const response = await axios.post(`${API_BASE_URL}/query`, requestData);
     return response.data;
   },
 

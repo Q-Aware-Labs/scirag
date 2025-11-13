@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2, User } from 'lucide-react';
-import { api, Source } from '../api/client';
+import { api, Source, APIConfig } from '../api/client';
 
 interface Message {
   id: string;
@@ -10,7 +10,11 @@ interface Message {
   timestamp: Date;
 }
 
-export default function ChatSection() {
+interface ChatSectionProps {
+  apiConfig?: APIConfig | null;
+}
+
+export default function ChatSection({ apiConfig }: ChatSectionProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,8 +44,8 @@ export default function ChatSection() {
     setIsLoading(true);
 
     try {
-      const response = await api.query(input);
-      
+      const response = await api.query(input, 5, apiConfig);
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
@@ -73,7 +77,9 @@ export default function ChatSection() {
           Ask Questions
         </h2>
         <p className="text-sm font-bold mt-1 opacity-75">
-          Powered by Claude AI + RAG
+          {apiConfig
+            ? `Powered by ${apiConfig.provider.charAt(0).toUpperCase() + apiConfig.provider.slice(1)} AI + RAG`
+            : 'Powered by Claude AI + RAG (default)'}
         </p>
       </div>
 

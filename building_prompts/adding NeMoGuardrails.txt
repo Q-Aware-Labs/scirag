@@ -1,0 +1,3 @@
+I want to add Nemo Guardrails from NVIDIA, for now for two reasons for now: Reason 1: Content safety and topic control. to check for and prevent harmful or off-topic in user inputs. Reason 2: Retrieval-Augmented Generation (RAG) grounding. ensure that LLM-generated text is factually consistent with the information retrieved from a knowledge base.
+
+When the Guardrail has detected some issue related to ehse two cases, i want some sort of cute little robot animation to appear warning the user and display something related to what the Guardrail systemhas detected.

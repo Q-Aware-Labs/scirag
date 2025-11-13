@@ -44,7 +44,15 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
     setIsLoading(true);
 
     try {
+      console.log('Sending query with config:', apiConfig ? `${apiConfig.provider} (${apiConfig.model || 'default'})` : 'server default');
       const response = await api.query(input, 5, apiConfig);
+      console.log('Received response:', { success: response.success, hasAnswer: !!response.answer, answerLength: response.answer?.length });
+
+      // Check if response is successful and has an answer
+      if (!response.success || !response.answer) {
+        const errorMsg = response.message || 'No answer received from the API';
+        throw new Error(errorMsg);
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -56,10 +64,23 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err: any) {
+      console.error('Chat error:', err);
+
+      // Extract error message from various possible sources
+      let errorText = 'Failed to get response';
+
+      if (err.response?.data?.detail) {
+        errorText = err.response.data.detail;
+      } else if (err.message) {
+        errorText = err.message;
+      } else if (typeof err === 'string') {
+        errorText = err;
+      }
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: `Error: ${err.response?.data?.detail || 'Failed to get response'}`,
+        content: `❌ Error: ${errorText}`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);

@@ -28,12 +28,17 @@ async def query_papers(request: QueryRequest):
         # If custom API config is provided, create a new agent instance
         if request.api_config:
             from ...agents.scirag_agent import SciRAGAgent
+            import logging
+
+            logger = logging.getLogger(__name__)
+            logger.info(f"Creating agent with custom config: provider={request.api_config.provider}, model={request.api_config.model}")
 
             agent = SciRAGAgent(
                 llm_provider=request.api_config.provider,
                 llm_api_key=request.api_config.api_key,
                 llm_model=request.api_config.model
             )
+            logger.info("Agent created successfully with custom config")
         else:
             # Use default agent instance with lazy initialization
             from ...main import get_agent

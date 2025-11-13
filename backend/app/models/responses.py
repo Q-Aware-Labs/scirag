@@ -77,13 +77,21 @@ class SourceInfo(BaseModel):
     url: str
 
 
+class GuardrailWarning(BaseModel):
+    """Guardrail warning information"""
+    type: str  # harmful, off_topic, jailbreak, hallucination, not_grounded
+    message: str
+    severity: str = "warning"  # warning, error
+
+
 class QueryResponse(BaseModel):
     """Response model for RAG queries"""
     success: bool
     answer: str
     sources: List[SourceInfo]
     message: Optional[str] = None
-    
+    guardrail_warning: Optional[GuardrailWarning] = None
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -97,7 +105,8 @@ class QueryResponse(BaseModel):
                         "url": "http://arxiv.org/abs/2301.12345v1"
                     }
                 ],
-                "message": None
+                "message": None,
+                "guardrail_warning": None
             }
         }
 

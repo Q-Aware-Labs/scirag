@@ -6,9 +6,13 @@ Endpoints for RAG-based question answering
 from fastapi import APIRouter, HTTPException
 
 from ...models.requests import QueryRequest
-from ...models.responses import QueryResponse, SourceInfo, ErrorResponse
+from ...models.responses import QueryResponse, SourceInfo, GuardrailWarning, ErrorResponse
+from ...services.guardrails_service import GuardrailsService
 
 router = APIRouter()
+
+# Initialize guardrails service
+guardrails_service = GuardrailsService()
 
 
 @router.post("/query", response_model=QueryResponse)
@@ -25,12 +29,32 @@ async def query_papers(request: QueryRequest):
     Note: Papers must be processed first using /api/papers/process
     """
     try:
+        import logging
+        logger = logging.getLogger(__name__)
+
+        # ============================================
+        # GUARDRAIL CHECK #1: Input Safety
+        # ============================================
+        is_safe_input, warning_type, warning_msg = guardrails_service.check_input(request.question)
+
+        if not is_safe_input:
+            logger.warning(f"Guardrail blocked input: {warning_type}")
+            return QueryResponse(
+                success=False,
+                answer="",
+                sources=[],
+                message="Your request was blocked for safety reasons.",
+                guardrail_warning=GuardrailWarning(
+                    type=warning_type,
+                    message=warning_msg,
+                    severity="error"
+                )
+            )
+
         # If custom API config is provided, create a new agent instance
         if request.api_config:
             from ...agents.scirag_agent import SciRAGAgent
-            import logging
 
-            logger = logging.getLogger(__name__)
             logger.info(f"Creating agent with custom config: provider={request.api_config.provider}, model={request.api_config.model}")
 
             agent = SciRAGAgent(
@@ -57,11 +81,35 @@ async def query_papers(request: QueryRequest):
                 message="No papers have been processed yet. Please search and process papers first using /api/search and /api/papers/process"
             )
 
-        # Query the agent
+        # Query the agent (get retrieved context for guardrails check)
         result = agent.query(
             question=request.question,
             n_results=request.n_results
         )
+
+        # ============================================
+        # GUARDRAIL CHECK #2: Output Grounding
+        # ============================================
+        # Get the retrieved documents for checking
+        from ...main import get_agent as get_default_agent
+        vector_results = agent.vectordb_service.query(request.question, n_results=request.n_results)
+        retrieved_docs = vector_results.get('documents', [[]])[0] if vector_results else []
+
+        is_safe_output, out_warning_type, out_warning_msg = guardrails_service.check_output(
+            response=result['answer'],
+            retrieved_context=retrieved_docs,
+            user_question=request.question
+        )
+
+        # Create guardrail warning if output check failed
+        output_warning = None
+        if not is_safe_output:
+            logger.warning(f"Guardrail flagged output: {out_warning_type}")
+            output_warning = GuardrailWarning(
+                type=out_warning_type,
+                message=out_warning_msg,
+                severity="warning"  # Warning, not error - still return the answer
+            )
         
         if not result['success']:
             return QueryResponse(
@@ -86,7 +134,8 @@ async def query_papers(request: QueryRequest):
             success=True,
             answer=result['answer'],
             sources=sources,
-            message=None
+            message=None,
+            guardrail_warning=output_warning
         )
     
     except Exception as e:

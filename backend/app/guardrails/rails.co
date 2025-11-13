@@ -1,0 +1,134 @@
+# SciRAG Guardrails - Colang Rails Definition
+
+# ============================================================================
+# INPUT RAILS - Check user inputs before processing
+# ============================================================================
+
+# Check for harmful content
+define flow check harmful content
+  user ...
+  $harmful = execute check_harmful_input
+
+  if $harmful
+    bot refuse harmful request
+    stop
+
+# Check if question is off-topic (not about research/papers)
+define flow check off topic
+  user ...
+  $off_topic = execute check_topic_relevance
+
+  if $off_topic
+    bot inform off topic
+    stop
+
+# Check for jailbreak attempts
+define flow check jailbreak attempts
+  user ...
+  $jailbreak = execute check_jailbreak
+
+  if $jailbreak
+    bot refuse jailbreak
+    stop
+
+# ============================================================================
+# OUTPUT RAILS - Check LLM responses before returning
+# ============================================================================
+
+# Check for hallucinations (facts not in retrieved context)
+define flow check hallucination
+  bot ...
+  $hallucinated = execute check_hallucination
+
+  if $hallucinated
+    bot acknowledge uncertainty
+    stop
+
+# Check factual grounding with retrieved documents
+define flow check factual grounding
+  bot ...
+  $not_grounded = execute check_grounding
+
+  if $not_grounded
+    bot clarify limited information
+    stop
+
+# Check for blocked terms in output
+define flow check blocked terms
+  bot ...
+  $has_blocked_terms = execute check_blocked_terms
+
+  if $has_blocked_terms
+    bot provide safe response
+    stop
+
+# ============================================================================
+# RETRIEVAL RAILS - Check retrieved context relevance
+# ============================================================================
+
+define flow check relevance
+  retrieve ...
+  $not_relevant = execute check_retrieval_relevance
+
+  if $not_relevant
+    bot inform no relevant papers
+    stop
+
+# ============================================================================
+# BOT RESPONSE TEMPLATES
+# ============================================================================
+
+# Response when harmful content is detected
+define bot refuse harmful request
+  "I'm designed to help with scientific research questions. I cannot assist with harmful, unethical, or dangerous content. Please ask a question related to your research papers."
+
+# Response when topic is off-topic
+define bot inform off topic
+  "I'm specifically designed to answer questions about the research papers you've processed. Your question seems to be outside this scope. Please ask about the content, methodology, findings, or analysis of your papers."
+
+# Response when jailbreak attempt detected
+define bot refuse jailbreak
+  "I notice you're trying to bypass my guidelines. I'm here to help with scientific research questions only. Please ask about your processed papers."
+
+# Response when hallucination detected
+define bot acknowledge uncertainty
+  "I want to ensure accuracy. Based on the papers you've provided, I don't have enough information to confidently answer this question. Could you ask something more specific about the content in your papers?"
+
+# Response when information is not well-grounded
+define bot clarify limited information
+  "While I can provide some information, the answer may not be fully supported by your processed papers. Please take this response with caution and verify against the original sources."
+
+# Response when no relevant papers found
+define bot inform no relevant papers
+  "I couldn't find relevant information in your processed papers to answer this question. You may need to process additional papers related to this topic."
+
+# Response for safe alternative
+define bot provide safe response
+  "I've reformulated my response to be more appropriate. Let me provide information based solely on the research papers."
+
+# ============================================================================
+# USER INTENT DEFINITIONS
+# ============================================================================
+
+# Define what constitutes research-related queries
+define user ask about research
+  "What are the main findings?"
+  "Explain the methodology"
+  "How do these papers compare?"
+  "What are the limitations?"
+  "Summarize the results"
+
+# Define off-topic queries
+define user ask off topic
+  "What's the weather?"
+  "Tell me a joke"
+  "Write me code for"
+  "How do I hack"
+  "Help me with my homework about"
+
+# Define harmful requests
+define user ask harmful
+  "How to make weapons"
+  "How to harm"
+  "Illegal activities"
+  "Unethical experiments"

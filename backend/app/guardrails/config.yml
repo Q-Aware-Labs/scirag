@@ -1,0 +1,40 @@
+# NeMo Guardrails Configuration for SciRAG
+
+# Model configuration - uses the provider passed at runtime
+models:
+  - type: main
+    engine: custom  # We'll use our custom LLM service
+    model: custom
+
+# Rails configuration
+rails:
+  input:
+    flows:
+      - check harmful content
+      - check off topic
+      - check jailbreak attempts
+
+  output:
+    flows:
+      - check hallucination
+      - check factual grounding
+      - check blocked terms
+
+  retrieval:
+    flows:
+      - check relevance
+
+# Sensitive topics that should be blocked
+sensitive_data_detection:
+  enabled: true
+
+# Custom configuration for scientific research domain
+custom:
+  domain: "scientific_research"
+  allowed_topics:
+    - "research papers"
+    - "scientific questions"
+    - "paper analysis"
+    - "methodology"
+    - "results and findings"
+    - "citations and references"

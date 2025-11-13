@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2, User } from 'lucide-react';
-import { api, Source, APIConfig } from '../api/client';
+import { api, Source, APIConfig, GuardrailWarning } from '../api/client';
+import GuardrailRobot from './GuardrailRobot';
 
 interface Message {
   id: string;
@@ -8,6 +9,7 @@ interface Message {
   content: string;
   sources?: Source[];
   timestamp: Date;
+  guardrailWarning?: GuardrailWarning;
 }
 
 interface ChatSectionProps {
@@ -44,7 +46,29 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
     setIsLoading(true);
 
     try {
+      console.log('Sending query with config:', apiConfig ? `${apiConfig.provider} (${apiConfig.model || 'default'})` : 'server default');
       const response = await api.query(input, 5, apiConfig);
+      console.log('Received response:', { success: response.success, hasAnswer: !!response.answer, answerLength: response.answer?.length });
+
+      // Check if response was blocked by guardrails
+      if (response.guardrail_warning && response.guardrail_warning.severity === 'error') {
+        // Input was blocked - show warning message
+        const blockedMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'assistant',
+          content: '',
+          timestamp: new Date(),
+          guardrailWarning: response.guardrail_warning
+        };
+        setMessages(prev => [...prev, blockedMessage]);
+        return;
+      }
+
+      // Check if response is successful and has an answer
+      if (!response.success || !response.answer) {
+        const errorMsg = response.message || 'No answer received from the API';
+        throw new Error(errorMsg);
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -52,14 +76,28 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
         content: response.answer,
         sources: response.sources,
         timestamp: new Date(),
+        guardrailWarning: response.guardrail_warning  // Include warning if present
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err: any) {
+      console.error('Chat error:', err);
+
+      // Extract error message from various possible sources
+      let errorText = 'Failed to get response';
+
+      if (err.response?.data?.detail) {
+        errorText = err.response.data.detail;
+      } else if (err.message) {
+        errorText = err.message;
+      } else if (typeof err === 'string') {
+        errorText = err;
+      }
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: `Error: ${err.response?.data?.detail || 'Failed to get response'}`,
+        content: `❌ Error: ${errorText}`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -115,17 +153,25 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
                 </div>
               </div>
             ) : (
-              <div className="card-brutal bg-white p-4 shadow-brutal">
-                <div className="flex items-start gap-3">
-                  <div className="bg-neo-pink p-2 border-2 border-black">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 space-y-3">
-                    <p className="font-medium leading-relaxed whitespace-pre-wrap">
-                      {message.content}
-                    </p>
-                    
-                    {message.sources && message.sources.length > 0 && (
+              <div className="space-y-3">
+                {/* Guardrail Warning (if present) */}
+                {message.guardrailWarning && (
+                  <GuardrailRobot warning={message.guardrailWarning} />
+                )}
+
+                {/* Assistant Message (only if not purely a guardrail error) */}
+                {message.content && (
+                  <div className="card-brutal bg-white p-4 shadow-brutal">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-neo-pink p-2 border-2 border-black">
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <p className="font-medium leading-relaxed whitespace-pre-wrap">
+                          {message.content}
+                        </p>
+
+                        {message.sources && message.sources.length > 0 && (
                       <div className="border-t-2 border-black pt-3 mt-3">
                         <p className="font-bold text-sm mb-2">📚 Sources:</p>
                         <div className="space-y-2">
@@ -143,9 +189,11 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
                           ))}
                         </div>
                       </div>
-                    )}
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>

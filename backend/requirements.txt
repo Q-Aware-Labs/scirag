@@ -10,6 +10,9 @@ anthropic>=0.40.0
 openai>=1.0.0
 google-generativeai>=0.3.0
 
+# NeMo Guardrails for content safety and RAG grounding
+nemoguardrails>=0.9.0
+
 # Embedding model
 sentence-transformers>=2.3.1
 

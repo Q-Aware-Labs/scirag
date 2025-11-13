@@ -44,7 +44,12 @@ class ClaudeProvider(LLMProvider):
                 max_tokens=max_tokens,
                 messages=[{"role": "user", "content": prompt}]
             )
-            return message.content[0].text
+
+            content = message.content[0].text
+            if not content:
+                raise ValueError("Claude returned empty response")
+
+            return content
         except Exception as e:
             logger.error(f"Claude API error: {str(e)}")
             raise ValueError(f"Failed to generate response from Claude: {str(e)}")
@@ -66,7 +71,12 @@ class OpenAIProvider(LLMProvider):
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=max_tokens
             )
-            return response.choices[0].message.content
+
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("OpenAI returned empty response")
+
+            return content
         except Exception as e:
             logger.error(f"OpenAI API error: {str(e)}")
             raise ValueError(f"Failed to generate response from OpenAI: {str(e)}")
@@ -92,7 +102,12 @@ class DeepSeekProvider(LLMProvider):
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=max_tokens
             )
-            return response.choices[0].message.content
+
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("DeepSeek returned empty response")
+
+            return content
         except Exception as e:
             logger.error(f"DeepSeek API error: {str(e)}")
             raise ValueError(f"Failed to generate response from DeepSeek: {str(e)}")
@@ -117,6 +132,10 @@ class GeminiProvider(LLMProvider):
                     "max_output_tokens": max_tokens,
                 }
             )
+
+            if not response.text:
+                raise ValueError("Gemini returned empty response")
+
             return response.text
         except Exception as e:
             logger.error(f"Gemini API error: {str(e)}")

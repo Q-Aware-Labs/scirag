@@ -84,6 +84,17 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
       return;
     }
 
+    // Validate API key format
+    const providerInfo = PROVIDER_INFO[provider];
+    if (!apiKey.trim().startsWith(providerInfo.keyPrefix)) {
+      const proceed = confirm(
+        `Warning: Your API key doesn't start with "${providerInfo.keyPrefix}". ` +
+        `This might not be a valid ${providerInfo.name} API key. ` +
+        `Do you want to save it anyway?`
+      );
+      if (!proceed) return;
+    }
+
     const config: APIConfig = {
       provider,
       apiKey: apiKey.trim(),

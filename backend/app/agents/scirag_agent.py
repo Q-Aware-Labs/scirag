@@ -131,11 +131,14 @@ class SciRAGAgent:
             # Prepare for vector DB
             chunks = result['chunks']
             ids = [f"{paper_id}_chunk_{i}" for i in range(len(chunks))]
+            # Store full metadata in ChromaDB so it's available across different agent instances
             metadatas = [{
                 'paper_id': paper_id,
-                'title': paper.title,
+                'title': metadata['title'],
                 'chunk_index': i,
-                'authors': ', '.join(metadata['authors'][:3])
+                'authors': ', '.join(metadata['authors'][:3]),
+                'published': metadata['published'],
+                'url': metadata['url']
             } for i in range(len(chunks))]
             
             # Add to vector database
@@ -221,15 +224,32 @@ class SciRAGAgent:
             results['metadatas'][0]
         )
         
-        # Collect unique sources
+        # Collect unique sources from ChromaDB metadata
+        # This works even when using custom API keys (new agent instance)
+        # because metadata is stored in ChromaDB, not just in memory
         sources = []
         seen_papers = set()
         for meta in results['metadatas'][0]:
             paper_id = meta['paper_id']
-            if paper_id not in seen_papers and paper_id in self.papers_metadata:
-                sources.append(self.papers_metadata[paper_id])
+            if paper_id not in seen_papers:
+                # Build source info from ChromaDB metadata
+                # If full metadata exists in memory, use it; otherwise reconstruct from ChromaDB
+                if paper_id in self.papers_metadata:
+                    sources.append(self.papers_metadata[paper_id])
+                else:
+                    # Reconstruct from ChromaDB metadata
+                    sources.append({
+                        'paper_id': paper_id,
+                        'title': meta.get('title', 'Unknown Title'),
+                        'authors': meta.get('authors', 'Unknown Authors').split(', '),
+                        'published': meta.get('published', 'Unknown Date'),
+                        'url': meta.get('url', ''),
+                        'pdf_url': f"https://arxiv.org/pdf/{paper_id}.pdf",
+                        'summary': '',  # Not stored in ChromaDB to save space
+                        'categories': []  # Not stored in ChromaDB to save space
+                    })
                 seen_papers.add(paper_id)
-        
+
         return {
             'answer': answer,
             'sources': sources,

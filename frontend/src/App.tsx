@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Search, Sparkles, FileText, MessageSquare } from 'lucide-react';
+import { Search, Sparkles, MessageSquare, Settings } from 'lucide-react';
 import SearchSection from './components/SearchSection';
 import ChatSection from './components/ChatSection';
 import PapersList from './components/PapersList';
-import { Paper } from './api/client';
+import ConfigSection from './components/ConfigSection';
+import { Paper, APIConfig } from './api/client';
 
 function App() {
   const [selectedPapers, setSelectedPapers] = useState<Paper[]>([]);
   const [processedPaperIds, setProcessedPaperIds] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'search' | 'chat'>('search');
+  const [activeTab, setActiveTab] = useState<'search' | 'chat' | 'config'>('search');
+  const [apiConfig, setApiConfig] = useState<APIConfig | null>(null);
 
   const handlePapersSelected = (papers: Paper[]) => {
     setSelectedPapers(papers);
@@ -63,6 +65,17 @@ function App() {
                 <MessageSquare className="w-5 h-5" />
                 <span className="hidden sm:inline">Chat</span>
               </button>
+              <button
+                onClick={() => setActiveTab('config')}
+                className={`btn-brutal flex items-center gap-2 shadow-brutal-sm ${
+                  activeTab === 'config'
+                    ? 'bg-neo-peach'
+                    : 'bg-white'
+                }`}
+              >
+                <Settings className="w-5 h-5" />
+                <span className="hidden sm:inline">Config</span>
+              </button>
             </div>
           </div>
         </div>
@@ -73,14 +86,18 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2">
-            {activeTab === 'search' ? (
+            {activeTab === 'search' && (
               <SearchSection
                 onPapersSelected={handlePapersSelected}
                 onPapersProcessed={handlePapersProcessed}
                 selectedPapers={selectedPapers}
               />
-            ) : (
-              <ChatSection />
+            )}
+            {activeTab === 'chat' && (
+              <ChatSection apiConfig={apiConfig} />
+            )}
+            {activeTab === 'config' && (
+              <ConfigSection onConfigSave={setApiConfig} />
             )}
           </div>
 

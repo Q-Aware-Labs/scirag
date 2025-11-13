@@ -41,11 +41,18 @@ export interface APIConfig {
   model?: string;
 }
 
+export interface GuardrailWarning {
+  type: string;
+  message: string;
+  severity: 'warning' | 'error';
+}
+
 export interface QueryResponse {
   success: boolean;
   answer: string;
   sources: Source[];
   message?: string;
+  guardrail_warning?: GuardrailWarning;
 }
 
 export const api = {

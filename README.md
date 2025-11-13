@@ -76,7 +76,19 @@ Perfect for researchers, students, and professionals who need to quickly underst
 - Get comprehensive answers based on processed papers
 - Automatic source citations for every claim
 - Context-aware follow-up questions
-- Powered by Claude AI (Anthropic)
+- **Multi-provider AI support** - Choose your preferred LLM:
+  - **Claude** (Anthropic) - Default
+  - **OpenAI** (GPT-4, GPT-4o)
+  - **DeepSeek** - Cost-effective alternative
+  - **Gemini** (Google) - Latest Google AI
+
+### 🔑 **Custom API Key Configuration**
+- **Use your own API keys** - No shared costs
+- **Browser-based storage** - Keys never stored on servers
+- **Provider flexibility** - Switch between AI providers
+- **Cost control** - Manage your own usage and expenses
+- **Privacy-first** - Direct API calls to providers
+- **Default fallback** - Option to use server's default key
 
 ### 🎨 **Modern Neobrutalist UI**
 - Bold, high-contrast design
@@ -135,7 +147,11 @@ Perfect for researchers, students, and professionals who need to quickly underst
 ### Backend
 - **[FastAPI](https://fastapi.tiangolo.com/)** - Modern Python web framework
 - **[ChromaDB](https://www.trychroma.com/)** - Vector database for embeddings
-- **[Anthropic Claude](https://www.anthropic.com/)** - Large language model for Q&A
+- **LLM Providers (Multi-provider support):**
+  - **[Anthropic Claude](https://www.anthropic.com/)** - Default LLM for Q&A
+  - **[OpenAI](https://openai.com/)** - GPT-4, GPT-4o models
+  - **[DeepSeek](https://www.deepseek.com/)** - Cost-effective alternative
+  - **[Google Gemini](https://deepmind.google/technologies/gemini/)** - Google's AI model
 - **[PyMuPDF](https://pymupdf.readthedocs.io/)** - PDF text extraction
 - **[arXiv API](https://arxiv.org/help/api)** - Scientific paper search
 - **[sentence-transformers](https://www.sbert.net/)** - Text embeddings
@@ -163,21 +179,29 @@ Perfect for researchers, students, and professionals who need to quickly underst
 │                     User Interface                       │
 │            React + TypeScript + Tailwind                 │
 │         (Neobrutalist Design - Deployed on Vercel)       │
+│                                                           │
+│  Features: Search | Chat | Config (API Key Setup)        │
 └─────────────────────────────────────────────────────────┘
                           │
-                          ↓ HTTPS/REST
+                          ↓ HTTPS/REST (with optional api_config)
 ┌─────────────────────────────────────────────────────────┐
 │                   FastAPI Backend                        │
 │           RESTful API with 8 Endpoints                   │
+│           Multi-Provider LLM Support                     │
 │              (Deployed on Railway)                       │
 └─────────────────────────────────────────────────────────┘
                           │
-        ┌─────────────────┼─────────────────┐
-        ↓                 ↓                 ↓
-   ┌────────┐       ┌──────────┐     ┌──────────┐
-   │ arXiv  │       │ ChromaDB │     │ Claude   │
-   │ API    │       │ Vectors  │     │ AI API   │
-   └────────┘       └──────────┘     └──────────┘
+        ┌─────────────────┼─────────────────┬──────────────┐
+        ↓                 ↓                 ↓              ↓
+   ┌────────┐       ┌──────────┐     ┌──────────────────────┐
+   │ arXiv  │       │ ChromaDB │     │   LLM Providers      │
+   │ API    │       │ Vectors  │     │  ┌────────────────┐  │
+   └────────┘       └──────────┘     │  │ Claude (Anthropic)│
+                                      │  │ OpenAI (GPT-4)  │
+                                      │  │ DeepSeek        │
+                                      │  │ Google Gemini   │
+                                      │  └────────────────┘  │
+                                      └──────────────────────┘
 ```
 
 ### Data Flow
@@ -207,7 +231,11 @@ Perfect for researchers, students, and professionals who need to quickly underst
 
 - **Python 3.10+** ([Download](https://www.python.org/downloads/))
 - **Node.js 18+** ([Download](https://nodejs.org/))
-- **Anthropic API Key** ([Get one](https://console.anthropic.com/))
+- **API Key** (at least one of the following):
+  - **Anthropic Claude** ([Get one](https://console.anthropic.com/)) - Default
+  - **OpenAI** ([Get one](https://platform.openai.com/api-keys))
+  - **DeepSeek** ([Get one](https://platform.deepseek.com/))
+  - **Google Gemini** ([Get one](https://aistudio.google.com/app/apikey))
 - **Git** ([Download](https://git-scm.com/))
 
 ### Installation
@@ -255,8 +283,9 @@ npm install
 Create `backend/.env`:
 
 ```bash
-# Required
-ANTHROPIC_API_KEY=your-api-key-here
+# API Key (Optional - users can provide their own via UI)
+# If not set, users MUST configure their own API key in the frontend
+ANTHROPIC_API_KEY=your-api-key-here  # Optional: Default fallback key
 
 # Optional (defaults provided)
 MAX_PAPERS=5
@@ -269,7 +298,13 @@ DOWNLOAD_DIR=./papers
 CHROMA_PERSIST_DIR=./chroma_db
 ```
 
-**Get your Anthropic API key:** [console.anthropic.com](https://console.anthropic.com/)
+**Getting API Keys:**
+- **Anthropic Claude:** [console.anthropic.com](https://console.anthropic.com/)
+- **OpenAI:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- **DeepSeek:** [platform.deepseek.com](https://platform.deepseek.com/)
+- **Google Gemini:** [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+
+> **Note:** The backend API key is now optional. Users can configure their own API keys via the **Config** tab in the UI, which gives them full control over provider selection and costs.
 
 #### 2. Frontend Environment Variables
 
@@ -308,20 +343,34 @@ Frontend runs at: **http://localhost:3000**
 
 ### Using the Application
 
-1. **Search for Papers**
+1. **Configure API (Optional but Recommended)**
+   - Click the **Config** tab in the header
+   - Choose your preferred AI provider:
+     - **Claude** (Anthropic) - Best for reasoning
+     - **OpenAI** (GPT-4) - Most popular
+     - **DeepSeek** - Cost-effective option
+     - **Gemini** (Google) - Latest Google AI
+   - Enter your API key (masked for security)
+   - Optionally specify a custom model
+   - Click "Save Configuration"
+   - Your key is stored locally in your browser only
+   - Toggle "Use default API key" to use server's key instead
+
+2. **Search for Papers**
+   - Click the **Search** tab
    - Enter a research topic (e.g., "neural networks", "quantum computing")
    - Adjust the number of papers (1-10)
    - Click "Search"
 
-2. **Process Papers**
+3. **Process Papers**
    - Papers are auto-selected after search
    - Click "Process X Papers"
    - Wait 30-60 seconds for processing
 
-3. **Ask Questions**
-   - Automatically switches to Chat tab after processing
+4. **Ask Questions**
+   - Automatically switches to **Chat** tab after processing
    - Type your question
-   - Get AI-powered answers with sources
+   - Get AI-powered answers with sources (using your configured provider)
    - Ask follow-up questions
 
 ### Example Queries
@@ -407,9 +456,18 @@ Ask questions about processed papers
 ```json
 {
   "question": "What are neural networks?",
-  "n_results": 5
+  "n_results": 5,
+  "api_config": {
+    "provider": "claude",
+    "api_key": "sk-ant-api03-...",
+    "model": "claude-sonnet-4-20250514"
+  }
 }
 ```
+
+> **Note:** The `api_config` parameter is optional. If not provided, the default server API key will be used.
+>
+> **Supported providers:** `claude`, `openai`, `deepseek`, `gemini`
 
 **Response:**
 ```json
@@ -473,10 +531,12 @@ Visit **http://localhost:8000/docs** for interactive Swagger UI with:
    - **Root Directory:** `backend`
    - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
-4. **Add Environment Variables**
+4. **Add Environment Variables** (Optional)
    ```
-   ANTHROPIC_API_KEY=your-key-here
+   ANTHROPIC_API_KEY=your-key-here  # Optional: Users can use their own keys via UI
    ```
+
+   > **Note:** The API key is now optional. Users can configure their own API keys from any supported provider (Claude, OpenAI, DeepSeek, Gemini) directly in the frontend UI.
 
 5. **Generate Domain**
    - Settings → Networking → Generate Domain
@@ -528,7 +588,8 @@ scirag/
 │   │   ├── services/            # Core business logic
 │   │   │   ├── arxiv_service.py
 │   │   │   ├── pdf_service.py
-│   │   │   └── vectordb_service.py
+│   │   │   ├── vectordb_service.py
+│   │   │   └── llm_service.py   # Multi-provider LLM abstraction
 │   │   ├── config.py            # Configuration management
 │   │   └── main.py              # FastAPI application
 │   ├── scripts/                 # Utility scripts
@@ -540,6 +601,7 @@ scirag/
 │   │   ├── components/          # React components
 │   │   │   ├── SearchSection.tsx
 │   │   │   ├── ChatSection.tsx
+│   │   │   ├── ConfigSection.tsx  # API key configuration UI
 │   │   │   ├── PaperCard.tsx
 │   │   │   └── PapersList.tsx
 │   │   ├── api/                 # API client
@@ -598,6 +660,67 @@ SciRAG features a **neobrutalist** design aesthetic:
 
 ---
 
+## 🔑 Custom API Key Configuration
+
+SciRAG now supports **custom API key configuration**, allowing users to use their own API keys from multiple LLM providers. This feature gives you:
+
+### Benefits
+
+- **💰 Cost Control** - Use your own API keys instead of sharing server costs
+- **🔒 Privacy** - Keys stored locally in browser, never on servers
+- **🎯 Provider Choice** - Switch between Claude, OpenAI, DeepSeek, or Gemini
+- **⚡ Flexibility** - Different models for different use cases
+- **📊 Transparency** - Direct access to your API usage and billing
+
+### Supported Providers
+
+| Provider | Default Model | Best For | Pricing |
+|----------|---------------|----------|---------|
+| **Claude (Anthropic)** | claude-sonnet-4-20250514 | Complex reasoning, research | [Pricing](https://www.anthropic.com/pricing) |
+| **OpenAI** | gpt-4o | General purpose, popular | [Pricing](https://openai.com/pricing) |
+| **DeepSeek** | deepseek-chat | Cost-effective alternative | [Pricing](https://platform.deepseek.com/pricing) |
+| **Gemini (Google)** | gemini-1.5-pro | Multimodal, latest Google AI | [Pricing](https://ai.google.dev/pricing) |
+
+### How It Works
+
+1. **Frontend UI Configuration**
+   - Navigate to the **Config** tab
+   - Select your preferred provider
+   - Enter your API key (masked for security)
+   - Optionally specify a custom model
+   - Save configuration (stored in browser localStorage)
+
+2. **Backend Processing**
+   - When you ask a question, your API config is sent with the request
+   - Backend creates a temporary LLM client with your credentials
+   - Response generated using your chosen provider
+   - Your API key is used only for that request, never stored on server
+
+3. **Fallback Option**
+   - Toggle "Use default API key" to use server's configuration
+   - Useful for trying the system before committing to a provider
+   - Server admin can optionally provide a default key for shared use
+
+### Security & Privacy
+
+- ✅ **Local Storage Only** - API keys stored in browser localStorage
+- ✅ **Direct API Calls** - Keys sent directly to provider, not saved on server
+- ✅ **HTTPS Required** - All API communications encrypted
+- ✅ **User Control** - Clear configuration, easy to update or remove
+- ⚠️ **Browser Data** - Clear browser data will remove saved keys
+
+### Example Configuration
+
+```typescript
+{
+  "provider": "openai",
+  "apiKey": "sk-proj-...",
+  "model": "gpt-4o"  // Optional: uses default if not specified
+}
+```
+
+---
+
 ## 🗺️ Roadmap
 
 ### Phase 1: Core Features ✅
@@ -615,6 +738,8 @@ SciRAG features a **neobrutalist** design aesthetic:
 - [x] Production documentation
 
 ### Phase 3: Enhanced Features 🚧
+- [x] **Custom API key configuration** - Users can use their own keys
+- [x] **Multi-provider LLM support** - Claude, OpenAI, DeepSeek, Gemini
 - [ ] User authentication (Clerk/Auth0)
 - [ ] Conversation history persistence
 - [ ] Export to PDF/Markdown

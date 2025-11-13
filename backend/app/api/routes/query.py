@@ -44,9 +44,12 @@ async def query_papers(request: QueryRequest):
             from ...main import get_agent
             agent = get_agent()
 
-        # Check if any papers are indexed
+        # Check if any papers are indexed in ChromaDB
+        # Note: We check chunks_indexed instead of papers_processed because when using
+        # custom API config, a new agent instance is created which doesn't have the
+        # in-memory papers_metadata, but ChromaDB still has all the processed papers
         stats = agent.get_stats()
-        if stats['papers_processed'] == 0:
+        if stats['chunks_indexed'] == 0:
             return QueryResponse(
                 success=False,
                 answer="",

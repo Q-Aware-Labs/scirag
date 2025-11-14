@@ -34,10 +34,10 @@ class GuardrailsService:
             self.rails = LLMRails(config)
             logger.info("✅ NeMo Guardrails initialized successfully")
         except ImportError:
-            logger.warning("⚠️ NeMo Guardrails not installed. Running without guardrails.")
+            logger.warning("⚠️ NeMo Guardrails not installed. Using built-in guardrails instead.")
             self.rails = None
         except Exception as e:
-            logger.error(f"❌ Failed to initialize guardrails: {str(e)}")
+            logger.warning(f"⚠️ NeMo Guardrails initialization failed: {str(e)}. Using built-in guardrails instead.")
             self.rails = None
 
     def check_input(self, user_input: str) -> Tuple[bool, Optional[str], Optional[str]]:
@@ -53,11 +53,12 @@ class GuardrailsService:
             - warning_type: Type of violation (harmful, off_topic, jailbreak, None)
             - warning_message: Human-readable warning message
         """
-        if not self.rails:
-            return True, None, None
+        # Always run built-in checks regardless of whether NeMo Guardrails is installed
+        logger.info(f"🛡️ Checking input: {user_input[:50]}...")
 
         # Check for harmful content
         if self._contains_harmful_content(user_input):
+            logger.warning(f"⚠️ Harmful content detected in: {user_input[:50]}")
             return False, "harmful", (
                 "I'm designed to help with scientific research questions. "
                 "I cannot assist with harmful, unethical, or dangerous content. "
@@ -66,6 +67,7 @@ class GuardrailsService:
 
         # Check for off-topic queries
         if self._is_off_topic(user_input):
+            logger.warning(f"⚠️ Off-topic query detected in: {user_input[:50]}")
             return False, "off_topic", (
                 "I'm specifically designed to answer questions about research papers. "
                 "Your question seems to be outside this scope. Please ask about the "
@@ -74,11 +76,13 @@ class GuardrailsService:
 
         # Check for jailbreak attempts
         if self._is_jailbreak_attempt(user_input):
+            logger.warning(f"⚠️ Jailbreak attempt detected in: {user_input[:50]}")
             return False, "jailbreak", (
                 "I notice you're trying to bypass my guidelines. I'm here to help "
                 "with scientific research questions only."
             )
 
+        logger.info("✅ Input passed all guardrail checks")
         return True, None, None
 
     def check_output(
@@ -98,11 +102,12 @@ class GuardrailsService:
         Returns:
             Tuple of (is_safe, warning_type, warning_message)
         """
-        if not self.rails:
-            return True, None, None
+        # Always run built-in checks
+        logger.info(f"🛡️ Checking output grounding...")
 
         # Check for hallucinations
         if self._contains_hallucination(response, retrieved_context):
+            logger.warning("⚠️ Potential hallucination detected")
             return False, "hallucination", (
                 "The response may contain information not supported by your papers. "
                 "Please verify this information against the original sources."
@@ -110,22 +115,30 @@ class GuardrailsService:
 
         # Check factual grounding
         if not self._is_well_grounded(response, retrieved_context):
+            logger.warning("⚠️ Response may not be well-grounded")
             return False, "not_grounded", (
                 "While I can provide some information, the answer may not be fully "
                 "supported by your processed papers. Please take this response with caution."
             )
 
+        logger.info("✅ Output passed grounding checks")
         return True, None, None
 
     def _contains_harmful_content(self, text: str) -> bool:
         """Check if text contains harmful content"""
         harmful_keywords = [
             "weapon", "bomb", "attack", "kill", "harm", "illegal",
-            "hack", "exploit", "steal", "fraud", "poison"
+            "hack", "exploit", "steal", "fraud", "poison", "dangerous"
         ]
 
         text_lower = text.lower()
-        return any(keyword in text_lower for keyword in harmful_keywords)
+        matched_keywords = [kw for kw in harmful_keywords if kw in text_lower]
+
+        if matched_keywords:
+            logger.info(f"Harmful keywords found: {matched_keywords}")
+            return True
+
+        return False
 
     def _is_off_topic(self, text: str) -> bool:
         """Check if question is off-topic (not about research papers)"""

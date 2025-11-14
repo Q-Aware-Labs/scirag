@@ -5,9 +5,14 @@ Main application entry point with lazy agent initialization
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 
 from .api.routes import search, query, papers
 from .config import settings
+from .utils.error_handlers import (
+    generic_exception_handler,
+    validation_exception_handler,
+)
 
 # Global agent instance - initialized lazily
 agent = None
@@ -40,11 +45,15 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=settings.ALLOWED_ORIGINS,  # Configured via ALLOWED_ORIGINS env var
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],  # Only needed HTTP methods
+    allow_headers=["Content-Type", "Authorization"],
 )
+
+# Register error handlers to sanitize error messages
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 # Include routers
 app.include_router(search.router, prefix="/api", tags=["Search"])
@@ -95,7 +104,7 @@ async def agent_status():
     This will initialize the agent if it hasn't been already.
     """
     global agent
-    
+
     try:
         agent_instance = get_agent()
         stats = agent_instance.get_stats()
@@ -104,7 +113,12 @@ async def agent_status():
             "agent_stats": stats
         }
     except Exception as e:
+        # Log error internally but don't expose details
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to initialize agent: {str(e)}", exc_info=True)
+
         return {
             "status": "error",
-            "message": f"Failed to initialize agent: {str(e)}"
+            "message": "Failed to initialize agent. Please check server logs."
         }

@@ -12,7 +12,13 @@ load_dotenv()
 
 class Settings:
     """Application settings"""
-    
+
+    # Security - CORS Configuration
+    ALLOWED_ORIGINS: list = os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000"  # Default for local development
+    ).split(",")
+
     # API Keys (optional - users can provide their own via the UI)
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 

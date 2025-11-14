@@ -1,48 +1,26 @@
 """
 Guardrails Service
-Implements NeMo Guardrails for content safety and RAG grounding
+Built-in content safety and RAG grounding checks
 """
 
 from typing import Dict, List, Optional, Tuple
 import logging
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 
 class GuardrailsService:
-    """Service for managing NeMo Guardrails"""
+    """Service for managing built-in guardrails"""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self):
         """
-        Initialize Guardrails Service
-
-        Args:
-            config_path: Path to guardrails config directory
+        Initialize Guardrails Service with built-in checks only
         """
-        self.config_path = config_path or Path(__file__).parent.parent / "guardrails"
-        self.rails = None
-        self._initialize_rails()
-
-    def _initialize_rails(self):
-        """Initialize NeMo Guardrails"""
-        try:
-            from nemoguardrails import RailsConfig, LLMRails
-
-            # Load configuration
-            config = RailsConfig.from_path(str(self.config_path))
-            self.rails = LLMRails(config)
-            logger.info("✅ NeMo Guardrails initialized successfully")
-        except ImportError:
-            logger.warning("⚠️ NeMo Guardrails not installed. Using built-in guardrails instead.")
-            self.rails = None
-        except Exception as e:
-            logger.warning(f"⚠️ NeMo Guardrails initialization failed: {str(e)}. Using built-in guardrails instead.")
-            self.rails = None
+        logger.info("✅ Built-in Guardrails initialized")
 
     def check_input(self, user_input: str) -> Tuple[bool, Optional[str], Optional[str]]:
         """
-        Check user input against guardrails
+        Check user input against built-in guardrails
 
         Args:
             user_input: The user's question
@@ -53,7 +31,6 @@ class GuardrailsService:
             - warning_type: Type of violation (harmful, off_topic, jailbreak, None)
             - warning_message: Human-readable warning message
         """
-        # Always run built-in checks regardless of whether NeMo Guardrails is installed
         logger.info(f"🛡️ Checking input: {user_input[:50]}...")
 
         # Check for harmful content
@@ -102,7 +79,6 @@ class GuardrailsService:
         Returns:
             Tuple of (is_safe, warning_type, warning_message)
         """
-        # Always run built-in checks
         logger.info(f"🛡️ Checking output grounding...")
 
         # Check for hallucinations
@@ -272,8 +248,8 @@ class GuardrailsService:
     def get_stats(self) -> Dict:
         """Get guardrails statistics"""
         return {
-            "enabled": self.rails is not None,
-            "config_path": str(self.config_path),
+            "enabled": True,
+            "type": "built-in",
             "input_rails": ["check harmful content", "check off topic", "check jailbreak attempts"],
             "output_rails": ["check hallucination", "check factual grounding"],
         }

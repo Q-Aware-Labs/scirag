@@ -10,11 +10,15 @@ from typing import List
 
 class PDFService:
     """Service for PDF processing"""
-    
+
+    # PDF processing limits (50MB max, 500 pages max)
+    MAX_PDF_SIZE = 50 * 1024 * 1024  # 50 MB in bytes
+    MAX_PAGES = 500  # Maximum pages to process
+
     def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 200):
         """
         Initialize PDF service
-        
+
         Args:
             chunk_size: Number of words per chunk
             chunk_overlap: Number of overlapping words between chunks
@@ -24,21 +28,42 @@ class PDFService:
     
     def extract_text(self, pdf_path: Path) -> str:
         """
-        Extract text from a PDF file
-        
+        Extract text from a PDF file with size and page limits
+
         Args:
             pdf_path: Path to PDF file
-            
+
         Returns:
             Extracted text as string
+
+        Raises:
+            ValueError: If PDF exceeds size or page limits
         """
-        print(f"   📖 Extracting text from PDF...")
-        
+        # Validate file exists and is readable
+        if not pdf_path.exists():
+            raise FileNotFoundError(f"PDF not found: {pdf_path}")
+
+        # Check file size
+        file_size = pdf_path.stat().st_size
+        if file_size > self.MAX_PDF_SIZE:
+            raise ValueError(
+                f"PDF too large: {file_size / 1024 / 1024:.1f}MB "
+                f"(max: {self.MAX_PDF_SIZE / 1024 / 1024:.0f}MB)"
+            )
+
+        print(f"   📖 Extracting text from PDF ({file_size / 1024:.1f}KB)...")
+
         try:
             doc = fitz.open(pdf_path)
             text = ""
-            page_count = len(doc)
-            
+            total_pages = len(doc)
+
+            # Limit number of pages
+            page_count = min(total_pages, self.MAX_PAGES)
+
+            if total_pages > self.MAX_PAGES:
+                print(f"   ⚠️  Document has {total_pages} pages. Processing first {self.MAX_PAGES}.")
+
             for page_num in range(page_count):
                 try:
                     page = doc[page_num]
@@ -47,13 +72,13 @@ class PDFService:
                 except Exception as e:
                     print(f"   ⚠️  Error reading page {page_num + 1}: {e}")
                     continue
-            
+
             doc.close()
-            
+
             if not text.strip():
                 print(f"   ⚠️  No text extracted from PDF")
                 return ""
-            
+
             print(f"   ✅ Extracted {len(text):,} characters from {page_count} pages")
             return text
         

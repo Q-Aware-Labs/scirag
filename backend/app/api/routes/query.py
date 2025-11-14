@@ -3,6 +3,7 @@ Query Routes
 Endpoints for RAG-based question answering
 """
 
+import logging
 from fastapi import APIRouter, HTTPException
 
 from ...models.requests import QueryRequest
@@ -10,8 +11,9 @@ from ...models.responses import QueryResponse, SourceInfo, GuardrailWarning, Err
 from ...services.guardrails_service import GuardrailsService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
-# Initialize guardrails service
+# Initialize guardrails service with built-in checks
 guardrails_service = GuardrailsService()
 
 
@@ -29,9 +31,6 @@ async def query_papers(request: QueryRequest):
     Note: Papers must be processed first using /api/papers/process
     """
     try:
-        import logging
-        logger = logging.getLogger(__name__)
-
         # ============================================
         # GUARDRAIL CHECK #1: Input Safety
         # ============================================
@@ -55,7 +54,7 @@ async def query_papers(request: QueryRequest):
         if request.api_config:
             from ...agents.scirag_agent import SciRAGAgent
 
-            logger.info(f"Creating agent with custom config: provider={request.api_config.provider}, model={request.api_config.model}")
+            logger.info(f"Creating agent with custom config: provider={request.api_config.provider}")
 
             agent = SciRAGAgent(
                 llm_provider=request.api_config.provider,
@@ -102,7 +101,6 @@ async def query_papers(request: QueryRequest):
         # GUARDRAIL CHECK #2: Output Grounding
         # ============================================
         # Get the retrieved documents for checking
-        from ...main import get_agent as get_default_agent
         vector_results = agent.vectordb_service.query(request.question, n_results=request.n_results)
         retrieved_docs = vector_results.get('documents', [[]])[0] if vector_results else []
 
@@ -121,7 +119,7 @@ async def query_papers(request: QueryRequest):
                 message=out_warning_msg,
                 severity="warning"  # Warning, not error - still return the answer
             )
-        
+
         if not result['success']:
             return QueryResponse(
                 success=False,
@@ -129,7 +127,7 @@ async def query_papers(request: QueryRequest):
                 sources=[],
                 message="Could not find relevant information in indexed papers"
             )
-        
+
         # Convert sources to response format
         sources = [
             SourceInfo(
@@ -140,7 +138,7 @@ async def query_papers(request: QueryRequest):
             )
             for source in result['sources']
         ]
-        
+
         return QueryResponse(
             success=True,
             answer=result['answer'],
@@ -148,9 +146,10 @@ async def query_papers(request: QueryRequest):
             message=None,
             guardrail_warning=output_warning
         )
-    
+
     except Exception as e:
+        logger.error(f"Query processing failed: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Error processing query: {str(e)}"
+            detail="Failed to process query. Please try again."
         )

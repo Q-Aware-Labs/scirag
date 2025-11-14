@@ -3,6 +3,7 @@ Search Routes
 Endpoints for searching arXiv papers
 """
 
+import logging
 from fastapi import APIRouter, HTTPException
 from typing import List
 
@@ -10,6 +11,7 @@ from ...models.requests import SearchRequest
 from ...models.responses import SearchResponse, PaperMetadata, ErrorResponse
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/search", response_model=SearchResponse)
@@ -55,7 +57,8 @@ async def search_papers(request: SearchRequest):
         )
     
     except Exception as e:
+        logger.error(f"Search failed: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Error searching papers: {str(e)}"
+            detail="Failed to search papers. Please try again."
         )

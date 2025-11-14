@@ -13,6 +13,9 @@ from typing import List
 class ArxivService:
     """Service for interacting with arXiv API"""
 
+    # PDF size limits (50MB max to prevent DoS attacks)
+    MAX_PDF_SIZE = 50 * 1024 * 1024  # 50 MB in bytes
+
     def __init__(self, download_dir: Path):
         """Initialize with download directory"""
         self.download_dir = Path(download_dir)
@@ -96,22 +99,42 @@ class ArxivService:
     
     def download_pdf(self, paper: arxiv.Result) -> Path:
         """
-        Download PDF for a paper with rate limiting
+        Download PDF for a paper with rate limiting and size validation
 
         Args:
             paper: arXiv paper result
 
         Returns:
             Path to downloaded PDF file
+
+        Raises:
+            ValueError: If PDF exceeds size limit
         """
-        # Create safe filename
-        safe_filename = "".join(
+        import hashlib
+
+        # Create safe filename with hash to prevent collisions
+        safe_title = "".join(
             c for c in paper.title if c.isalnum() or c in (' ', '-', '_')
         ).rstrip()
-        safe_filename = safe_filename[:100]  # Limit length
-        pdf_path = self.download_dir / f"{safe_filename}.pdf"
+        safe_title = safe_title[:80] if safe_title else "untitled"
+
+        # Add hash of paper ID to ensure uniqueness
+        paper_id = paper.entry_id.split('/')[-1]
+        id_hash = hashlib.md5(paper_id.encode()).hexdigest()[:8]
+        pdf_filename = f"{safe_title}_{id_hash}.pdf"
+        pdf_path = self.download_dir / pdf_filename
+
+        # Ensure path stays within download directory (prevent path traversal)
+        pdf_path = pdf_path.resolve()
+        if not str(pdf_path).startswith(str(self.download_dir.resolve())):
+            raise ValueError("Invalid file path detected - possible path traversal attempt")
 
         if pdf_path.exists():
+            # Check existing file size
+            file_size = pdf_path.stat().st_size
+            if file_size > self.MAX_PDF_SIZE:
+                pdf_path.unlink()  # Delete oversized file
+                raise ValueError(f"Existing PDF exceeds size limit: {file_size / 1024 / 1024:.1f}MB")
             print(f"   📄 PDF already exists: {pdf_path.name}")
             return pdf_path
 
@@ -120,32 +143,56 @@ class ArxivService:
         # Rate limiting before download
         self._rate_limit()
 
+        # Extract arXiv ID from entry_id
+        arxiv_id = paper.entry_id.split('/abs/')[-1]
+        pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+
         try:
-            # Try the built-in download method
-            paper.download_pdf(filename=str(pdf_path))
-        except Exception as e:
-            # If that fails, construct the PDF URL manually
-            print(f"   ⚠️  Standard download failed, trying alternative method...")
+            # First, check file size with HEAD request
+            head_response = requests.head(pdf_url, timeout=10)
+            content_length = head_response.headers.get('content-length')
 
-            # Extract arXiv ID from entry_id
-            arxiv_id = paper.entry_id.split('/abs/')[-1]
-            pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+            if content_length:
+                content_length = int(content_length)
+                if content_length > self.MAX_PDF_SIZE:
+                    raise ValueError(
+                        f"PDF too large: {content_length / 1024 / 1024:.1f}MB "
+                        f"(max: {self.MAX_PDF_SIZE / 1024 / 1024:.0f}MB)"
+                    )
+                print(f"   📊 PDF size: {content_length / 1024:.1f}KB")
 
+            # Download with streaming to prevent memory issues
             print(f"   📥 Downloading from: {pdf_url}")
+            response = requests.get(pdf_url, stream=True, timeout=30)
+            response.raise_for_status()
 
-            # Add a small delay before alternative download
-            time.sleep(1)
+            downloaded_size = 0
+            with open(pdf_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    downloaded_size += len(chunk)
+                    if downloaded_size > self.MAX_PDF_SIZE:
+                        # Delete partial file
+                        f.close()
+                        if pdf_path.exists():
+                            pdf_path.unlink()
+                        raise ValueError(
+                            f"PDF exceeded size limit during download: {downloaded_size / 1024 / 1024:.1f}MB"
+                        )
+                    f.write(chunk)
 
-            response = requests.get(pdf_url, timeout=30)
+            print(f"   ✅ Downloaded {downloaded_size / 1024:.1f}KB to: {pdf_path.name}")
+            return pdf_path
 
-            if response.status_code == 200:
-                with open(pdf_path, 'wb') as f:
-                    f.write(response.content)
-            else:
-                raise Exception(f"Failed to download PDF: HTTP {response.status_code}")
-
-        print(f"   ✅ Downloaded to: {pdf_path.name}")
-        return pdf_path
+        except requests.exceptions.RequestException as e:
+            # Clean up partial download
+            if pdf_path.exists():
+                pdf_path.unlink()
+            raise Exception(f"Failed to download PDF: {str(e)}")
+        except Exception as e:
+            # Clean up on any error
+            if pdf_path.exists():
+                pdf_path.unlink()
+            raise
     
     def get_paper_metadata(self, paper: arxiv.Result) -> dict:
         """

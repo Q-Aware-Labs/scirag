@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Sparkles, MessageSquare, Settings } from 'lucide-react';
+import { Search, Sparkles, MessageSquare, Settings, Github, Heart, HelpCircle } from 'lucide-react';
 import SearchSection from './components/SearchSection';
 import ChatSection from './components/ChatSection';
 import PapersList from './components/PapersList';
@@ -35,7 +35,7 @@ function App() {
                 <h1 className="font-display text-4xl font-black tracking-tight">
                   SciRAG
                 </h1>
-                <p className="text-sm font-bold mt-1">
+                <p className="text-xl font-bold mt-1">
                   Scientific Research Assistant
                 </p>
               </div>
@@ -112,11 +112,49 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t-4 border-black mt-12 py-6 bg-neo-peach">
-        <div className="container mx-auto px-4 text-center">
-          <p className="font-bold text-sm">
-            Powered by arXiv, Claude AI & Neobrutalism ✨
-          </p>
+      <footer className="border-t-4 border-black mt-12 py-8 bg-neo-peach">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col items-center gap-4">
+            {/* Main Info */}
+            <div className="text-center">
+              <p className="font-bold text-lg flex items-center justify-center gap-2">
+                Made with <Heart className="w-4 h-4 fill-red-500 text-red-500" /> by{' '}
+                <a
+                  href="https://qaware.co"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-neo-pink transition-colors"
+                >
+                  Q-Aware Labs
+                </a>
+              </p>
+              <p className="font-bold text-sm mt-1 opacity-75">
+                Powered by arXiv, Claude AI & Neobrutalism ✨
+              </p>
+            </div>
+
+            {/* Links */}
+            <div className="flex flex-wrap justify-center gap-3">
+              <a
+                href="https://github.com/antonyga/scirag"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-brutal bg-black text-white shadow-brutal-sm flex items-center gap-2 text-sm"
+              >
+                <Github className="w-4 h-4" />
+                View on GitHub
+              </a>
+              <a
+                href="https://github.com/antonyga/scirag#usage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-brutal bg-neo-cyan shadow-brutal-sm flex items-center gap-2 text-sm"
+              >
+                <HelpCircle className="w-4 h-4" />
+                Usage Guide
+              </a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

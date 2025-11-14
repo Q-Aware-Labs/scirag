@@ -385,7 +385,7 @@ virtual environment setup steps.
 We'd especially love help with:
 
 ### 🐛 Bug Fixes
-- Check [Issues](https://github.com/antonyga/scirag/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
+- Check [Issues](https://github.com/Q-Aware-Labs/scirag/issues?q=is%3Aissue+is%3Aopen+label%3Abug)
 - Fix known bugs
 - Improve error handling
 
@@ -435,7 +435,7 @@ See our [Roadmap](README.md#-roadmap) for planned features:
 ## Questions?
 
 Feel free to:
-- Open a [Discussion](https://github.com/antonyga/scirag/discussions)
+- Open a [Discussion](https://github.com/Q-Aware-Labs/scirag/discussions)
 - Ask in existing Issues
 - Reach out directly: antonio@example.com
 

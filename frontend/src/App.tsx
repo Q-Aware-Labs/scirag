@@ -136,7 +136,7 @@ function App() {
             {/* Links */}
             <div className="flex flex-wrap justify-center gap-3">
               <a
-                href="https://github.com/antonyga/scirag"
+                href="https://github.com/Q-Aware-Labs/scirag"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-brutal bg-black text-white shadow-brutal-sm flex items-center gap-2 text-sm"
@@ -145,7 +145,7 @@ function App() {
                 View on GitHub
               </a>
               <a
-                href="https://github.com/antonyga/scirag#usage"
+                href="https://github.com/Q-Aware-Labs/scirag#usage"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-brutal bg-neo-cyan shadow-brutal-sm flex items-center gap-2 text-sm"

@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Deployment](https://img.shields.io/badge/Deployed-Railway%20%2B%20Vercel-blueviolet?style=flat-square)](https://scirag.railway.app)
 
-[Live Demo](https://scirag.vercel.app) · [API Docs](https://scirag-production.up.railway.app/docs) · [Report Bug](https://github.com/antonyga/scirag/issues) · [Request Feature](https://github.com/antonyga/scirag/issues)
+[Live Demo](https://scirag.vercel.app) · [API Docs](https://scirag-production.up.railway.app/docs) · [Report Bug](https://github.com/Q-Aware-Labs/scirag/issues) · [Request Feature](https://github.com/Q-Aware-Labs/scirag/issues)
 
 </div>
 
@@ -243,7 +243,7 @@ Perfect for researchers, students, and professionals who need to quickly underst
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/antonyga/scirag.git
+git clone https://github.com/Q-Aware-Labs/scirag.git
 cd scirag
 ```
 
@@ -772,7 +772,7 @@ Contributions are what make the open-source community amazing! Any contributions
 
 1. **Fork the Project**
    ```bash
-   git clone https://github.com/antonyga/scirag.git
+   git clone https://github.com/Q-Aware-Labs/scirag.git
    ```
 
 2. **Create your Feature Branch**
@@ -802,7 +802,7 @@ Contributions are what make the open-source community amazing! Any contributions
 
 ### Areas for Contribution
 
-- 🐛 **Bug fixes** - Check [Issues](https://github.com/antonyga/scirag/issues)
+- 🐛 **Bug fixes** - Check [Issues](https://github.com/Q-Aware-Labs/scirag/issues)
 - ✨ **New features** - See [Roadmap](#-roadmap)
 - 📖 **Documentation** - Improve guides and examples
 - 🎨 **Design** - UI/UX improvements
@@ -856,11 +856,11 @@ Distributed under the MIT License. See `LICENSE` for more information.
 - 💼 LinkedIn: [Antony Garcia](https://linkedin.com/in/antonyga)
 
 ### Project Links
-- 🏠 **Repository:** [github.com/antonyga/scirag](https://github.com/antonyga/scirag)
+- 🏠 **Repository:** [github.com/Q-Aware-Labs/scirag](https://github.com/Q-Aware-Labs/scirag)
 - 🌐 **Live Demo:** [scirag.vercel.app](https://scirag.vercel.app)
 - 📖 **Documentation:** [docs](docs/)
-- 🐛 **Issues:** [Report a bug](https://github.com/antonyga/scirag/issues)
-- 💡 **Discussions:** [GitHub Discussions](https://github.com/antonyga/scirag/discussions)
+- 🐛 **Issues:** [Report a bug](https://github.com/Q-Aware-Labs/scirag/issues)
+- 💡 **Discussions:** [GitHub Discussions](https://github.com/Q-Aware-Labs/scirag/discussions)
 
 ### Support the Project
 
@@ -875,12 +875,12 @@ If you find SciRAG helpful, please:
 
 ## 📊 Project Stats
 
-![GitHub stars](https://img.shields.io/github/stars/antonyga/scirag?style=social)
-![GitHub forks](https://img.shields.io/github/forks/antonyga/scirag?style=social)
-![GitHub issues](https://img.shields.io/github/issues/antonyga/scirag)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/antonyga/scirag)
-![GitHub last commit](https://img.shields.io/github/last-commit/antonyga/scirag)
-![GitHub repo size](https://img.shields.io/github/repo-size/antonyga/scirag)
+![GitHub stars](https://img.shields.io/github/stars/Q-Aware-Labs/scirag?style=social)
+![GitHub forks](https://img.shields.io/github/forks/Q-Aware-Labs/scirag?style=social)
+![GitHub issues](https://img.shields.io/github/issues/Q-Aware-Labs/scirag)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Q-Aware-Labs/scirag)
+![GitHub last commit](https://img.shields.io/github/last-commit/Q-Aware-Labs/scirag)
+![GitHub repo size](https://img.shields.io/github/repo-size/Q-Aware-Labs/scirag)
 
 ---
 
@@ -903,7 +903,7 @@ If you use SciRAG in your research or project, please cite:
   author = {Garcia, Antony},
   title = {SciRAG: Scientific Research Assistant with RAG},
   year = {2025},
-  url = {https://github.com/antonyga/scirag},
+  url = {https://github.com/Q-Aware-Labs/scirag},
   description = {An AI-powered research assistant for searching and understanding scientific literature from Arxiv papers}
 }
 ```

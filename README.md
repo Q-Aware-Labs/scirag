@@ -835,15 +835,8 @@ Distributed under the MIT License. See `LICENSE` for more information.
 - **[Railway](https://railway.app/)** - Simple backend hosting
 - **[Vercel](https://vercel.com/)** - Seamless frontend deployment
 
-### Inspiration
-- **Research struggles** - Born from the frustration of reading hundreds of papers
-- **Neobrutalism movement** - Design inspired by digital brutalist aesthetics
-- **Open science** - Commitment to making research more accessible
-
 ### Special Thanks
 - arXiv for maintaining an open repository of scientific knowledge
-- The open-source community for incredible tools and libraries
-- Early testers and contributors
 
 ---
 

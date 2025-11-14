@@ -26,14 +26,31 @@ async def process_papers(request: ProcessPapersRequest):
     Process papers by their arXiv IDs
 
     - **paper_ids**: List of arXiv paper IDs (e.g., ["2301.12345v1", "2302.67890v1"])
+    - **api_config**: API configuration (required to prevent using server's API key)
 
     Downloads PDFs, extracts text, creates embeddings, and indexes them.
     This must be done before querying with /api/query
     """
     try:
-        # Get agent instance using lazy initialization
-        from ...main import get_agent
-        agent = get_agent()
+        # Require user to provide their own API key to prevent using server's quota
+        if not request.api_config:
+            raise HTTPException(
+                status_code=400,
+                detail="API key required. Please configure your API key in the Configuration tab before processing papers."
+            )
+
+        # Create agent instance with user's API configuration
+        from ...agents.scirag_agent import SciRAGAgent
+
+        logger.info(f"Creating agent with user's API config: provider={request.api_config.provider}")
+
+        agent = SciRAGAgent(
+            llm_provider=request.api_config.provider,
+            llm_api_key=request.api_config.api_key,
+            llm_model=request.api_config.model
+        )
+
+        logger.info("Agent created successfully with user's API config")
 
         if not request.paper_ids:
             raise HTTPException(

@@ -64,10 +64,28 @@ export const api = {
     return response.data;
   },
 
-  processPapers: async (paperIds: string[]): Promise<ProcessResponse> => {
-    const response = await axios.post(`${API_BASE_URL}/papers/process`, {
+  processPapers: async (paperIds: string[], apiConfig?: APIConfig | null): Promise<ProcessResponse> => {
+    const requestData: {
+      paper_ids: string[];
+      api_config?: {
+        provider: string;
+        api_key: string;
+        model?: string;
+      };
+    } = {
       paper_ids: paperIds
-    });
+    };
+
+    // Include API config if provided
+    if (apiConfig) {
+      requestData.api_config = {
+        provider: apiConfig.provider,
+        api_key: apiConfig.apiKey,
+        model: apiConfig.model
+      };
+    }
+
+    const response = await axios.post(`${API_BASE_URL}/papers/process`, requestData);
     return response.data;
   },
 

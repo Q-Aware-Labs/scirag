@@ -91,6 +91,7 @@ function App() {
                 onPapersSelected={handlePapersSelected}
                 onPapersProcessed={handlePapersProcessed}
                 selectedPapers={selectedPapers}
+                apiConfig={apiConfig}
               />
             )}
             {activeTab === 'chat' && (

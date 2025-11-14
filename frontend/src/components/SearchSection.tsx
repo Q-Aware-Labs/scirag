@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { api, Paper } from '../api/client';
+import { api, Paper, APIConfig } from '../api/client';
 import PaperCard from './PaperCard';
 
 interface Props {
   onPapersSelected: (papers: Paper[]) => void;
   onPapersProcessed: (paperIds: string[]) => void;
   selectedPapers: Paper[];
+  apiConfig: APIConfig | null;
 }
 
-export default function SearchSection({ onPapersSelected, onPapersProcessed, selectedPapers }: Props) {
+export default function SearchSection({ onPapersSelected, onPapersProcessed, selectedPapers, apiConfig }: Props) {
   const [query, setQuery] = useState('');
   const [maxResults, setMaxResults] = useState(3);
   const [searchResults, setSearchResults] = useState<Paper[]>([]);
@@ -39,12 +40,18 @@ export default function SearchSection({ onPapersSelected, onPapersProcessed, sel
   const handleProcessPapers = async () => {
     if (selectedPapers.length === 0) return;
 
+    // Validate that API key is configured
+    if (!apiConfig) {
+      setError('API key required. Please configure your API key in the Configuration tab before processing papers.');
+      return;
+    }
+
     setIsProcessing(true);
     setError('');
 
     try {
       const paperIds = selectedPapers.map(p => p.paper_id);
-      const response = await api.processPapers(paperIds);
+      const response = await api.processPapers(paperIds, apiConfig);
 
       if (response.success) {
         onPapersProcessed(paperIds);

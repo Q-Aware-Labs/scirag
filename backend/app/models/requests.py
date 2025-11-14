@@ -52,6 +52,7 @@ class SearchRequest(BaseModel):
 class ProcessPapersRequest(BaseModel):
     """Request model for processing papers"""
     paper_ids: List[str] = Field(..., description="List of arXiv paper IDs to process", min_items=1, max_items=20)
+    api_config: Optional[APIConfig] = Field(None, description="API configuration required to process papers (prevents using server's API key)")
 
     @validator('paper_ids')
     def validate_paper_ids(cls, v):
@@ -74,7 +75,12 @@ class ProcessPapersRequest(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "paper_ids": ["2301.12345v1", "2302.67890v1"]
+                "paper_ids": ["2301.12345v1", "2302.67890v1"],
+                "api_config": {
+                    "provider": "claude",
+                    "api_key": "sk-ant-api03-...",
+                    "model": "claude-sonnet-4-20250514"
+                }
             }
         }
 

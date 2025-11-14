@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Deployment](https://img.shields.io/badge/Deployed-Railway%20%2B%20Vercel-blueviolet?style=flat-square)](https://scirag.railway.app)
 
-[Live Demo](https://scirag.vercel.app) · [API Docs](https://scirag-production.up.railway.app/doc) · [Report Bug](https://github.com/antonyga/scirag/issues) · [Request Feature](https://github.com/antonyga/scirag/issues)
+[Live Demo](https://scirag.vercel.app) · [API Docs](https://scirag-production.up.railway.app/docs) · [Report Bug](https://github.com/antonyga/scirag/issues) · [Request Feature](https://github.com/antonyga/scirag/issues)
 
 </div>
 

@@ -40,10 +40,10 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=settings.ALLOWED_ORIGINS,  # Configured via ALLOWED_ORIGINS env var
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],  # Only needed HTTP methods
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Include routers

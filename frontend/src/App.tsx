@@ -120,7 +120,7 @@ function App() {
               <p className="font-bold text-lg flex items-center justify-center gap-2">
                 Made with <Heart className="w-4 h-4 fill-red-500 text-red-500" /> by{' '}
                 <a
-                  href="https://qaware.co"
+                  href="https://github.com/Q-Aware-Labs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline hover:text-neo-pink transition-colors"

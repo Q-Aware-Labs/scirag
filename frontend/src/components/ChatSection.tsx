@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, Loader2, User } from 'lucide-react';
+import { Send, Sparkles, Loader2, User, Baby, GraduationCap } from 'lucide-react';
 import { api, Source, APIConfig, GuardrailWarning } from '../api/client';
 import GuardrailRobot from './GuardrailRobot';
 
@@ -30,24 +30,22 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const askQuestion = async (question: string) => {
+    if (!question.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: input,
+      content: question,
       timestamp: new Date(),
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
     setIsLoading(true);
 
     try {
       console.log('Sending query with config:', apiConfig ? `${apiConfig.provider} (${apiConfig.model || 'default'})` : 'server default');
-      const response = await api.query(input, 5, apiConfig);
+      const response = await api.query(question, 5, apiConfig);
       console.log('Received response:', { success: response.success, hasAnswer: !!response.answer, answerLength: response.answer?.length });
 
       // Check if response was blocked by guardrails
@@ -106,6 +104,23 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    await askQuestion(input);
+    setInput('');
+  };
+
+  const handleELI5 = async () => {
+    const question = "Please explain what these papers are about in very simple, non-technical terms that a 5-year-old could understand. Use everyday language and simple examples. Keep it to about 300 words.";
+    await askQuestion(question);
+  };
+
+  const handleELI13 = async () => {
+    const question = "Please explain what these papers are about in a way that a 13-year-old student could understand. Use clear language with some scientific terms explained simply. Keep it to about 300 words.";
+    await askQuestion(question);
+  };
+
   return (
     <div className="h-[calc(100vh-300px)] flex flex-col">
       {/* Chat Header */}
@@ -120,6 +135,31 @@ export default function ChatSection({ apiConfig }: ChatSectionProps) {
             : 'Powered by Claude AI + RAG (default)'}
         </p>
       </div>
+
+      {/* Quick Action Buttons - ELI5 and ELI13 */}
+      {messages.length === 0 && (
+        <div className="card-brutal bg-neo-yellow p-4 shadow-brutal mb-4">
+          <p className="font-bold text-sm mb-3">🚀 Quick Start - Get a Simple Explanation:</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={handleELI5}
+              disabled={isLoading}
+              className="btn-brutal bg-neo-pink shadow-brutal-sm flex items-center gap-2 text-sm disabled:opacity-50"
+            >
+              <Baby className="w-4 h-4" />
+              ELI5 (Explain Like I'm 5)
+            </button>
+            <button
+              onClick={handleELI13}
+              disabled={isLoading}
+              className="btn-brutal bg-neo-cyan shadow-brutal-sm flex items-center gap-2 text-sm disabled:opacity-50"
+            >
+              <GraduationCap className="w-4 h-4" />
+              ELI13 (Explain Like I'm 13)
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto mb-4 space-y-4">

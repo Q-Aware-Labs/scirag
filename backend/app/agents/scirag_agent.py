@@ -42,31 +42,34 @@ class SciRAGAgent:
         """
         print("🚀 Initializing SciRAG Agent...")
 
-        # Initialize LLM provider
+        # Initialize LLM provider (now optional)
         # For backward compatibility, use anthropic_api_key if llm_api_key is not provided
         api_key = llm_api_key or anthropic_api_key or settings.ANTHROPIC_API_KEY
 
-        if not api_key:
-            raise ValueError("API key not found. Please provide an API key.")
-
-        try:
-            self.llm_provider = LLMService.create_provider(
-                provider_name=llm_provider,
-                api_key=api_key,
-                model=llm_model
-            )
-            print(f"✅ Initialized {llm_provider} provider with model: {self.llm_provider.model}")
-        except Exception as e:
-            raise ValueError(f"Failed to initialize LLM provider: {str(e)}")
+        # Only initialize LLM provider if an API key is available
+        self.llm_provider = None
+        if api_key:
+            try:
+                self.llm_provider = LLMService.create_provider(
+                    provider_name=llm_provider,
+                    api_key=api_key,
+                    model=llm_model
+                )
+                print(f"✅ Initialized {llm_provider} provider with model: {self.llm_provider.model}")
+            except Exception as e:
+                print(f"⚠️  Failed to initialize LLM provider: {str(e)}")
+                print("   Agent will work for search and paper processing only.")
+        else:
+            print("ℹ️  No API key provided. Agent will work for search and paper processing only.")
 
         # Keep backward compatibility
-        self.anthropic_api_key = api_key
+        self.anthropic_api_key = api_key if api_key else None
         self.anthropic_client = None  # Deprecated, keeping for compatibility
-        
+
         # Initialize services
         download_dir = download_dir or settings.DOWNLOAD_DIR
         chroma_dir = chroma_dir or settings.CHROMA_PERSIST_DIR
-        
+
         self.arxiv_service = ArxivService(download_dir=download_dir)
         self.pdf_service = PDFService(
             chunk_size=settings.CHUNK_SIZE,
@@ -76,13 +79,13 @@ class SciRAGAgent:
             persist_directory=chroma_dir,
             embedding_model=settings.EMBEDDING_MODEL
         )
-        
+
         # Initialize collection
         self.vectordb_service.create_collection(reset=False)
-        
+
         # Store paper metadata
         self.papers_metadata = {}
-        
+
         print("✅ SciRAG Agent initialized successfully!\n")
     
     def search_papers(self, query: str, max_results: int = None) -> List:
@@ -192,18 +195,24 @@ class SciRAGAgent:
     def query(self, question: str, n_results: int = 5) -> Dict:
         """
         Answer a question using RAG
-        
+
         Args:
             question: User's question
             n_results: Number of chunks to retrieve
-            
+
         Returns:
             Dictionary with answer and sources
         """
+        # Check if LLM provider is initialized
+        if not self.llm_provider:
+            raise ValueError(
+                "LLM provider not initialized. Please provide an API key via the API configuration."
+            )
+
         print("="*70)
         print(f"💬 USER QUERY: {question}")
         print("="*70 + "\n")
-        
+
         # Retrieve relevant chunks
         print(f"🔎 Retrieving relevant content...")
         results = self.vectordb_service.query(question, n_results=n_results)

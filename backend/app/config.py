@@ -13,35 +13,32 @@ load_dotenv()
 class Settings:
     """Application settings"""
     
-    # API Keys
+    # API Keys (optional - users can provide their own via the UI)
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-    
+
     # arXiv Settings
     MAX_PAPERS: int = int(os.getenv("MAX_PAPERS", "5"))
-    
+
     # PDF Processing
     CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "1000"))
     CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "200"))
     DOWNLOAD_DIR: Path = Path(os.getenv("DOWNLOAD_DIR", "./papers"))
-    
+
     # Embedding Settings
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
-    
+
     # Vector DB Settings
     CHROMA_PERSIST_DIR: Path = Path(os.getenv("CHROMA_PERSIST_DIR", "./chroma_db"))
-    
+
     # LLM Settings
     CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-20250514")
     MAX_TOKENS: int = int(os.getenv("MAX_TOKENS", "2000"))
-    
+
     def __init__(self):
         """Validate settings on initialization"""
-        if not self.ANTHROPIC_API_KEY:
-            raise ValueError(
-                "ANTHROPIC_API_KEY not found. "
-                "Set it in your .env file or as an environment variable."
-            )
-        
+        # API key is now optional - users can provide their own via the UI
+        # No longer raising an error if ANTHROPIC_API_KEY is not set
+
         # Create directories if they don't exist
         self.DOWNLOAD_DIR.mkdir(exist_ok=True, parents=True)
         self.CHROMA_PERSIST_DIR.mkdir(exist_ok=True, parents=True)

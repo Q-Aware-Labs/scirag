@@ -47,7 +47,6 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
-  const [useDefaultKey, setUseDefaultKey] = useState(true);
   const [savedConfig, setSavedConfig] = useState<APIConfig | null>(null);
 
   // Load saved configuration from localStorage on mount
@@ -59,7 +58,6 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
         setProvider(config.provider);
         setApiKey(config.apiKey);
         setModel(config.model || '');
-        setUseDefaultKey(false);
         setSavedConfig(config);
         onConfigSave(config);
       } catch (error) {
@@ -69,16 +67,6 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
   }, []);
 
   const handleSave = () => {
-    if (useDefaultKey) {
-      // Clear custom configuration
-      localStorage.removeItem('scirag-api-config');
-      setSavedConfig(null);
-      onConfigSave(null);
-      setApiKey('');
-      setModel('');
-      return;
-    }
-
     if (!apiKey.trim()) {
       alert('Please enter an API key');
       return;
@@ -112,7 +100,6 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
     onConfigSave(null);
     setApiKey('');
     setModel('');
-    setUseDefaultKey(true);
   };
 
   const providerInfo = PROVIDER_INFO[provider];
@@ -125,36 +112,32 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
           <h2 className="text-2xl font-black">API Configuration</h2>
         </div>
 
-        {/* Warning about API keys */}
-        <div className="bg-neo-yellow border-4 border-black p-4 mb-6 flex items-start gap-3">
+        {/* Fun message about API keys */}
+        <div className="bg-neo-pink border-4 border-black p-4 mb-6 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-bold mb-1">Privacy Notice:</p>
+            <p className="font-bold mb-1">🎉 Bring Your Own API Key!</p>
             <p>
-              Your API key is stored locally in your browser and sent directly to the API provider.
-              It's never stored on our servers. Clear your browser data to remove it.
+              Free rides are over! 🚀 The server owner got tired of paying for your AI adventures.
+              But don't worry—your API key stays safe in your browser and goes directly to your chosen provider.
+              We're just the middleman here! 🤝
             </p>
           </div>
         </div>
 
-        {/* Use Default Key Toggle */}
-        <div className="mb-6">
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={useDefaultKey}
-              onChange={(e) => setUseDefaultKey(e.target.checked)}
-              className="w-5 h-5 border-2 border-black"
-            />
-            <span className="font-bold">Use default API key (from server)</span>
-          </label>
-          <p className="text-sm text-gray-600 mt-2 ml-8">
-            If checked, the system will use the API key configured on the server.
-          </p>
+        {/* Privacy notice */}
+        <div className="bg-neo-cyan border-4 border-black p-4 mb-6 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-bold mb-1">🔒 Privacy First:</p>
+            <p>
+              Your API key is stored locally in your browser only. It's sent directly to your chosen provider (Claude, OpenAI, etc.)
+              and never touches our servers. Clear your browser data to remove it anytime.
+            </p>
+          </div>
         </div>
 
-        {!useDefaultKey && (
-          <>
+        <>
             {/* Provider Selection */}
             <div className="mb-6">
               <label className="block font-bold mb-2">Select Provider</label>
@@ -218,7 +201,6 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
               </p>
             </div>
           </>
-        )}
 
         {/* Action Buttons */}
         <div className="flex gap-3">
@@ -230,30 +212,28 @@ const ConfigSection: React.FC<ConfigSectionProps> = ({ onConfigSave }) => {
             Save Configuration
           </button>
 
-          {savedConfig && !useDefaultKey && (
+          {savedConfig && (
             <button
               onClick={handleClear}
               className="px-6 py-3 bg-white border-4 border-black font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
             >
-              Clear & Use Default
+              Clear Configuration
             </button>
           )}
         </div>
 
         {/* Status Message */}
-        {savedConfig && !useDefaultKey && (
+        {savedConfig ? (
           <div className="mt-4 p-3 bg-neo-green border-4 border-black">
             <p className="font-bold">
               ✓ Using {PROVIDER_INFO[savedConfig.provider].name}
               {savedConfig.model && ` with model: ${savedConfig.model}`}
             </p>
           </div>
-        )}
-
-        {useDefaultKey && (
-          <div className="mt-4 p-3 bg-neo-cyan border-4 border-black">
+        ) : (
+          <div className="mt-4 p-3 bg-neo-yellow border-4 border-black">
             <p className="font-bold">
-              ✓ Using default server configuration
+              ⚠️ No API key configured. Please save your configuration above to use the chat feature.
             </p>
           </div>
         )}

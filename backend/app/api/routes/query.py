@@ -66,6 +66,17 @@ async def query_papers(request: QueryRequest):
         else:
             # Use default agent instance with lazy initialization
             from ...main import get_agent
+            from ...config import settings
+
+            # Check if server has a default API key configured
+            if not settings.ANTHROPIC_API_KEY:
+                return QueryResponse(
+                    success=False,
+                    answer="",
+                    sources=[],
+                    message="No API key provided. Please configure your API key in the Configuration tab to use the query feature."
+                )
+
             agent = get_agent()
 
         # Check if any papers are indexed in ChromaDB

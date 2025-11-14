@@ -1,0 +1,15 @@
+I want to implement the following functionalities, fixes and UI improvements:
+
+New Functionalities:
+
+After finding papers related to the user query, the user must be able to select which papers to process.
+UI Improvements:
+
+The 'Search' button label should be labeled 'Search Papers'
+The font size of the label 'Scientific Research Assistant' in top of the page should be a little bigger
+Somewhere put the label 'Made by Q-Aware Labs' or something similar.
+Somewhere put in a friendly way a link to the github repo of SciRAG
+Somewhere add a simple and informative guide on how to use the tool
+UI fixes:
+
+Actually when the little robot appears, after some guardrails alerts it is just some overlapped icons moving. Just use a single robot icon animation. Make it simpler.

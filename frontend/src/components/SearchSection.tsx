@@ -45,7 +45,7 @@ export default function SearchSection({ onPapersSelected, onPapersProcessed, sel
     try {
       const paperIds = selectedPapers.map(p => p.paper_id);
       const response = await api.processPapers(paperIds);
-      
+
       if (response.success) {
         onPapersProcessed(paperIds);
       } else {
@@ -56,6 +56,23 @@ export default function SearchSection({ onPapersSelected, onPapersProcessed, sel
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleToggleSelect = (paper: Paper) => {
+    const isCurrentlySelected = selectedPapers.some(p => p.paper_id === paper.paper_id);
+    if (isCurrentlySelected) {
+      onPapersSelected(selectedPapers.filter(p => p.paper_id !== paper.paper_id));
+    } else {
+      onPapersSelected([...selectedPapers, paper]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    onPapersSelected(searchResults);
+  };
+
+  const handleDeselectAll = () => {
+    onPapersSelected([]);
   };
 
   return (
@@ -112,7 +129,7 @@ export default function SearchSection({ onPapersSelected, onPapersProcessed, sel
               ) : (
                 <>
                   <Search className="w-5 h-5" />
-                  Search
+                  Search Papers
                 </>
               )}
             </button>
@@ -130,24 +147,40 @@ export default function SearchSection({ onPapersSelected, onPapersProcessed, sel
       {/* Results */}
       {searchResults.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             <h3 className="font-display text-2xl font-black">
               Found {searchResults.length} Papers
             </h3>
-            <button
-              onClick={handleProcessPapers}
-              disabled={isProcessing}
-              className="btn-brutal bg-neo-pink shadow-brutal flex items-center gap-2 disabled:opacity-50"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                `Process ${selectedPapers.length} Paper${selectedPapers.length !== 1 ? 's' : ''}`
-              )}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSelectAll}
+                disabled={selectedPapers.length === searchResults.length}
+                className="btn-brutal bg-neo-cyan shadow-brutal text-sm px-3 py-2 disabled:opacity-50"
+              >
+                Select All
+              </button>
+              <button
+                onClick={handleDeselectAll}
+                disabled={selectedPapers.length === 0}
+                className="btn-brutal bg-neo-yellow shadow-brutal text-sm px-3 py-2 disabled:opacity-50"
+              >
+                Deselect All
+              </button>
+              <button
+                onClick={handleProcessPapers}
+                disabled={isProcessing || selectedPapers.length === 0}
+                className="btn-brutal bg-neo-pink shadow-brutal flex items-center gap-2 disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  `Process ${selectedPapers.length} Paper${selectedPapers.length !== 1 ? 's' : ''}`
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -157,7 +190,11 @@ export default function SearchSection({ onPapersSelected, onPapersProcessed, sel
                 className="animate-slide-in"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <PaperCard paper={paper} />
+                <PaperCard
+                  paper={paper}
+                  isSelected={selectedPapers.some(p => p.paper_id === paper.paper_id)}
+                  onToggleSelect={handleToggleSelect}
+                />
               </div>
             ))}
           </div>

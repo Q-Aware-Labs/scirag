@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, AlertTriangle, XCircle, Info } from 'lucide-react';
+import { Shield, AlertTriangle, XCircle, Info, Bot } from 'lucide-react';
 
 export interface GuardrailWarning {
   type: string;
@@ -53,44 +53,11 @@ const GuardrailRobot: React.FC<GuardrailRobotProps> = ({ warning, onDismiss }) =
   return (
     <div className="w-full animate-slide-in">
       <div className={`bg-${getColor()} border-4 border-black p-6 shadow-brutal relative`}>
-        {/* Cute Robot Icon */}
+        {/* Robot Icon */}
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
-            {/* Robot Head with Animation */}
-            <div className="relative">
-              {/* Robot Face Container */}
-              <div className="w-16 h-16 bg-neo-cyan border-4 border-black rounded-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-bounce-subtle">
-                {/* Robot Eyes */}
-                <div className="flex justify-center gap-2 mt-3">
-                  <div className="w-2 h-2 bg-black rounded-full animate-blink"></div>
-                  <div className="w-2 h-2 bg-black rounded-full animate-blink" style={{ animationDelay: '0.1s' }}></div>
-                </div>
-                {/* Robot Mouth */}
-                <div className="flex justify-center mt-2">
-                  <div className="w-6 h-1 bg-black rounded-full"></div>
-                </div>
-              </div>
-
-              {/* Robot Antenna */}
-              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2">
-                <div className="w-0.5 h-3 bg-black mx-auto"></div>
-                <div className="w-2 h-2 bg-neo-pink border-2 border-black rounded-full animate-pulse-glow"></div>
-              </div>
-
-              {/* Robot Body */}
-              <div className="w-16 h-8 bg-white border-4 border-black border-t-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                {/* Control Panel */}
-                <div className="flex justify-center gap-1 mt-1">
-                  <div className="w-1 h-1 bg-neo-green rounded-full"></div>
-                  <div className="w-1 h-1 bg-neo-yellow rounded-full"></div>
-                  <div className="w-1 h-1 bg-neo-pink rounded-full"></div>
-                </div>
-              </div>
-
-              {/* Shield Icon Overlay for warnings */}
-              <div className="absolute -right-1 -top-1 bg-white border-2 border-black p-1 rounded-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                {getIcon()}
-              </div>
+            <div className="w-16 h-16 bg-neo-cyan border-4 border-black p-3 shadow-brutal animate-bounce-subtle flex items-center justify-center">
+              <Bot className="w-10 h-10" strokeWidth={2.5} />
             </div>
           </div>
 

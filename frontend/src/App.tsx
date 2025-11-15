@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Sparkles, MessageSquare, Settings, Github, Heart, HelpCircle } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import SearchSection from './components/SearchSection';
 import ChatSection from './components/ChatSection';
 import PapersList from './components/PapersList';
@@ -158,6 +159,7 @@ function App() {
           </div>
         </div>
       </footer>
+      <Analytics />
     </div>
   );
 }
